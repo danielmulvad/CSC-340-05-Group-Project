@@ -1,0 +1,18 @@
+**
+*
+
+# Source
+!client/
+!client/src/
+!client/src/**/*.cpp
+!client/src/**/*.h
+
+!server/
+!server/src/
+!server/src/**/*.cpp
+!server/src/**/*.h
+
+# Misc
+!.gitignore
+!Makefile
+!README.md
