@@ -57,21 +57,28 @@ private:
 
     void handleClient(int clientSocket)
     {
-        char buffer[1024] = {0};
-        ssize_t valread = read(clientSocket, buffer, sizeof(buffer) - 1);
-        if (valread < 0)
+        while (true)
         {
-            perror("read");
-            exit(EXIT_FAILURE);
+            char buffer[1024] = {0};
+            ssize_t valread = read(clientSocket, buffer, sizeof(buffer) - 1);
+            if (valread <= 0)
+            {
+                // Either an error occurred or the client disconnected
+                if (valread < 0)
+                    perror("read");
+                break;
+            }
+
+            buffer[valread] = '\0'; // Ensuring null-termination
+
+            Message receivedMsg = Message::deserialize(std::string(buffer));
+            printf("Received: %s\n", receivedMsg.content.c_str());
+
+            Message replyMsg(getCurrentTimestamp(), "Hello from server");
+            std::string serializedMsg = replyMsg.serialize();
+            send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
+            printf("Reply sent\n");
         }
-
-        Message receivedMsg = Message::deserialize(std::string(buffer));
-        printf("Received: %s\n", receivedMsg.content.c_str());
-
-        Message replyMsg(getCurrentTimestamp(), "Hello from server");
-        std::string serializedMsg = replyMsg.serialize();
-        send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
-        printf("Reply sent\n");
 
         close(clientSocket);
     }

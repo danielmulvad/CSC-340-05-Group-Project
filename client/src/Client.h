@@ -3,6 +3,7 @@
 
 #include "../../common/Message.h"
 #include <arpa/inet.h>
+#include <iostream>
 #include <stdexcept>
 #include <stdio.h>
 #include <string>
@@ -58,21 +59,31 @@ public:
     {
         setupConnection();
 
-        Message helloMsg(getCurrentTimestamp(), "Hello from client");
-        std::string serializedMsg = helloMsg.serialize();
-        send(socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
-        printf("Hello message sent\n");
-
-        char buffer[1024] = {0};
-        ssize_t valread = read(socket_fd, buffer, sizeof(buffer) - 1);
-        if (valread < 0)
+        while (true)
         {
-            perror("read");
-            exit(EXIT_FAILURE);
-        }
+            std::string inputMsg;
+            std::cout << "Enter message (type 'exit' to quit): ";
+            std::getline(std::cin, inputMsg);
 
-        Message receivedMsg = Message::deserialize(std::string(buffer));
-        printf("Received: %s\n", receivedMsg.content.c_str());
+            if (inputMsg == "exit")
+                break;
+
+            Message helloMsg(getCurrentTimestamp(), inputMsg);
+            std::string serializedMsg = helloMsg.serialize();
+            send(socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
+            printf("Message sent\n");
+
+            char buffer[1024] = {0};
+            ssize_t valread = read(socket_fd, buffer, sizeof(buffer) - 1);
+            if (valread < 0)
+            {
+                perror("read");
+                exit(EXIT_FAILURE);
+            }
+
+            Message receivedMsg = Message::deserialize(std::string(buffer));
+            printf("Received: %s\n", receivedMsg.content.c_str());
+        }
 
         close(socket_fd);
         return 0;
