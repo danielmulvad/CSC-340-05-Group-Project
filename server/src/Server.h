@@ -9,6 +9,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "../../common/Message.h"
 
 class Server
 {
@@ -31,11 +32,9 @@ public:
     int run()
     {
         int server_fd, new_socket;
-        ssize_t valread;
         struct sockaddr_in address;
         int opt = 1;
         socklen_t addrlen = sizeof(address);
-        char buffer[1024] = {0};
         std::string hello = "Hello from server";
 
         // Creating socket file descriptor
@@ -64,22 +63,33 @@ public:
             perror("bind failed");
             exit(EXIT_FAILURE);
         }
+
         if (listen(server_fd, 3) < 0)
         {
             perror("listen");
             exit(EXIT_FAILURE);
         }
-        if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
-                                 &addrlen)) < 0)
+
+        if ((new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen)) < 0)
         {
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        valread = read(new_socket, buffer,
-                       1024 - 1);
 
-        printf("%s\n", buffer);
-        send(new_socket, hello.c_str(), strlen(hello.c_str()), 0);
+        char buffer[1024] = {0};
+        ssize_t valread = read(new_socket, buffer, 1024 - 1);
+        if (valread < 0)
+        {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+        Message receivedMsg = Message::deserialize(std::string(buffer));
+        printf("%s\n", receivedMsg.content.c_str());
+
+        std::string currentTimestamp = getCurrentTimestamp();
+        Message helloMsg(currentTimestamp, "Hello from server");
+        std::string serializedMsg = helloMsg.serialize();
+        send(new_socket, serializedMsg.c_str(), serializedMsg.length(), 0);
         printf("Hello message sent\n");
 
         // closing the connected socket

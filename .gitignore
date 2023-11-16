@@ -7,6 +7,10 @@
 !client/src/**/*.cpp
 !client/src/**/*.h
 
+!common/
+!common/**/*.cpp
+!common/**/*.h
+
 !server/
 !server/src/
 !server/src/**/*.cpp

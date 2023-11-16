@@ -7,6 +7,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "../../common/Message.h"
 
 class Client
 {
@@ -32,7 +33,6 @@ public:
         int status, valread, client_fd;
         struct sockaddr_in serv_addr;
         std::string hello = "Hello from client";
-        char buffer[1024] = {0};
         if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
             printf("\n Socket creation error \n");
@@ -50,17 +50,27 @@ public:
             return -1;
         }
 
-        if ((status = connect(client_fd, (struct sockaddr *)&serv_addr,
-                              sizeof(serv_addr))) < 0)
+        if ((status = connect(client_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
         }
 
-        send(client_fd, hello.c_str(), strlen(hello.c_str()), 0);
+        std::string currentTimestamp = getCurrentTimestamp();
+        Message helloMsg(currentTimestamp, "Hello from client");
+        std::string serializedMsg = helloMsg.serialize();
+        send(client_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
         printf("Hello message sent\n");
+
+        char buffer[1024] = {0};
         valread = read(client_fd, buffer, 1024 - 1);
-        printf("%s\n", buffer);
+        if (valread < 0)
+        {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+        Message receivedMsg = Message::deserialize(std::string(buffer));
+        printf("%s\n", receivedMsg.content.c_str());
 
         close(client_fd);
         return 0;
