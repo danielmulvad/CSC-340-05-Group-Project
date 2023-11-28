@@ -2,14 +2,9 @@
 #define _SERVER_H_
 
 #include "../../common/Message.h"
+#include "./LinkedList.h"
 #include <netinet/in.h>
-#include <signal.h>
-#include <stdexcept>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <sys/socket.h>
+#include <thread>
 #include <unistd.h>
 
 void signalHandler(int signum);
@@ -19,6 +14,8 @@ class Server
 private:
     const unsigned int port;
     int server_fd;
+    LinkedList<int> *connectedClients;
+    LinkedList<Message> *messages;
 
     void setupSocket()
     {
@@ -55,8 +52,46 @@ private:
         }
     }
 
+    ssize_t sendMessageToClient(int clientSocket, Message message)
+    {
+        std::string serializedMsg = message.serialize();
+        return send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
+    }
+
+    void broadcastMessage(int senderId, Message message)
+    {
+        Node<int> *current = this->connectedClients->getHead();
+        while (current != nullptr)
+        {
+            if (current->getValue() != senderId)
+            {
+                sendMessageToClient(current->getValue(), message);
+            }
+            current = current->getNext();
+        }
+    }
+
+    bool handleServerMessage(int clientSocket, Message message)
+    {
+        if (message.content.find(CLIENT_TO_SERVER_PREFIX) != std::string::npos)
+        {
+            if (message.content.find(CLIENT_ESTABLISH_CONNECTION_REQUEST_PREFIX) != std::string::npos)
+            {
+                // Establish connection request
+                int newConnectionId = clientSocket;
+                std::string connectionMessage = SERVER_TO_CLIENT_PREFIX + " " + SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX + " " + std::to_string(newConnectionId);
+                Message replyMsg(newConnectionId, connectionMessage);
+                sendMessageToClient(clientSocket, replyMsg);
+                std::cout << replyMsg << std::endl;
+                return true;
+            }
+        }
+        return false;
+    }
+
     void handleClient(int clientSocket)
     {
+        this->connectedClients->add(clientSocket);
         while (true)
         {
             char buffer[1024] = {0};
@@ -71,13 +106,20 @@ private:
 
             buffer[valread] = '\0'; // Ensuring null-termination
 
-            Message receivedMsg = Message::deserialize(std::string(buffer));
-            printf("Received: %s\n", receivedMsg.content.c_str());
+            std::string bufferString = std::string(buffer);
+            Message receivedMsg = Message::deserialize(bufferString);
+            this->messages->add(receivedMsg);
 
-            Message replyMsg(getCurrentTimestamp(), "Hello from server");
-            std::string serializedMsg = replyMsg.serialize();
-            send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
-            printf("Reply sent\n");
+            std::cout << receivedMsg << std::endl;
+
+            if (!handleServerMessage(clientSocket, receivedMsg))
+            {
+                // Not a server message, so it's a client message
+                broadcastMessage(clientSocket, receivedMsg);
+            }
+
+            // reset buffer
+            memset(buffer, 0, sizeof(buffer));
         }
 
         close(clientSocket);
@@ -85,7 +127,7 @@ private:
 
 public:
     Server() : Server(8080) {}
-    Server(unsigned int port) : port(port)
+    Server(unsigned int port) : port(port), connectedClients(new LinkedList<int>()), messages(new LinkedList<Message>())
     {
         if (port > 65535)
         {
@@ -95,6 +137,11 @@ public:
         {
             throw std::invalid_argument("Port must be greater than 1024");
         }
+    }
+    ~Server()
+    {
+        delete connectedClients;
+        delete messages;
     }
 
     int run()
@@ -110,10 +157,11 @@ public:
             if (new_socket < 0)
             {
                 perror("accept");
-                continue; // Continue accepting other connections even if one fails
+                continue;
             }
 
-            handleClient(new_socket);
+            std::thread clientThread(&Server::handleClient, this, new_socket);
+            clientThread.detach();
         }
 
         close(server_fd);
