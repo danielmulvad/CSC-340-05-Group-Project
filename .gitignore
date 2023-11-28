@@ -19,4 +19,4 @@
 # Misc
 !.gitignore
 !Makefile
-!README.md
+!*.md
