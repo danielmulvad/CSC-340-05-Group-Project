@@ -43,6 +43,7 @@ private:
     }
 
 public:
+    Client() : Client(8080) {}
     Client(unsigned int port) : port(port)
     {
         if (port > 65535)

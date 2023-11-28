@@ -84,6 +84,7 @@ private:
     }
 
 public:
+    Server() : Server(8080) {}
     Server(unsigned int port) : port(port)
     {
         if (port > 65535)
