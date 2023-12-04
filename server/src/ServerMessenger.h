@@ -108,6 +108,7 @@ public:
     ssize_t sendMessageToClient(int clientSocket, const Message &message)
     {
         std::string serializedMsg = message.serialize();
+        printf("Sending message: %s\n", serializedMsg.c_str());
         return send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
     }
 
@@ -132,15 +133,14 @@ public:
             clientThread.detach();
         }
 
-        close(server_fd);
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     int stop() override
     {
         running = false;
         close(server_fd);
-        return 0;
+        return EXIT_SUCCESS;
     };
 };
 
