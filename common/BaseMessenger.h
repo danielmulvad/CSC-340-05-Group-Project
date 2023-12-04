@@ -15,17 +15,19 @@ class BaseMessenger
 protected:
     bool running;
     int socket_fd;
-    std::mutex connectionMutex;
-    std::thread listenerThread;
     MessageRouter router;
 
     virtual void setupConnection() = 0;
-    void processReceivedMessage(const int &connectionId, const Message &msg)
+    void processReceivedMessage(const int &connectionId, const Message &msg, const bool debug = true)
     {
         for (const auto &entry : router)
         {
             if (msg.content.find(entry.first) != std::string::npos)
             {
+                if (debug)
+                {
+                    std::cout << "Received a message: " << msg.toString() << std::endl;
+                }
                 entry.second(connectionId, msg);
                 return;
             }
@@ -51,16 +53,26 @@ public:
         router.emplace(path, std::move(handler));
     }
 
-    void sendMessage(const Message &msg)
+    int sendMessage(const int &clientSocket, const Message &msg)
     {
-        if (socket_fd <= 0)
+        if (clientSocket <= 0)
         {
             std::cerr << "Socket is not connected." << std::endl;
-            return;
+            return EXIT_FAILURE;
         }
-
         std::string serializedMsg = msg.serialize();
-        send(socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
+        ssize_t result = send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
+        if (result < 0)
+        {
+            std::cerr << "Failed to send message." << std::endl;
+            return EXIT_FAILURE;
+        }
+        return EXIT_SUCCESS;
+    }
+
+    int sendMessage(const Message &msg)
+    {
+        return sendMessage(socket_fd, msg);
     }
 };
 

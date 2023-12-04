@@ -10,7 +10,8 @@ class ClientMessenger : public BaseMessenger
 private:
     std::string serverAddress;
     unsigned int port;
-    std::mutex sendMutex;
+    std::condition_variable exitConditionVariable;
+    std::thread listenerThread;
     int socketId = 0;
     int connectionId = 0;
 
@@ -49,7 +50,7 @@ private:
             {
                 buffer[valread] = '\0';
                 Message receivedMsg = Message::deserialize(std::string(buffer));
-                processReceivedMessage(connectionId, receivedMsg);
+                processReceivedMessage(connectionId, receivedMsg, false);
             }
         }
     }
@@ -72,6 +73,10 @@ public:
         EstablishConnectionRequestMessage connectionMessage(connectionId);
         sendMessageToServer(connectionMessage);
 
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        exitConditionVariable.wait(lock);
+
         return EXIT_SUCCESS;
     }
 
@@ -80,18 +85,24 @@ public:
         if (running)
         {
             running = false;
-            if (listenerThread.joinable())
+
+            if (std::this_thread::get_id() != listenerThread.get_id() && listenerThread.joinable())
             {
                 listenerThread.join();
             }
-            close(socket_fd);
+
+            if (socket_fd > 0)
+            {
+                close(socket_fd);
+            }
         }
+
+        exitConditionVariable.notify_all();
         return EXIT_SUCCESS;
     }
 
     void sendMessageToServer(const Message &msg)
     {
-        std::lock_guard<std::mutex> lock(sendMutex);
         sendMessage(msg);
     }
 

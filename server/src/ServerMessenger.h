@@ -99,18 +99,16 @@ public:
         {
             if (current->getValue() != senderId)
             {
-                printf("Sending message to client %d\n", current->getValue());
                 sendMessageToClient(current->getValue(), message);
             }
             current = current->getNext();
         }
     }
 
-    ssize_t sendMessageToClient(int clientSocket, const Message &message)
+    int sendMessageToClient(const int &clientSocket, const Message &message)
     {
-        std::string serializedMsg = message.serialize();
-        printf("Sending message: %s\n", serializedMsg.c_str());
-        return send(clientSocket, serializedMsg.c_str(), serializedMsg.length(), 0);
+        std::cout << "Sending message: " << message << std::endl;
+        return sendMessage(clientSocket, message);
     }
 
     int start() override
