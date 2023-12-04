@@ -125,24 +125,42 @@ public:
         messenger->sendMessageToClient(connectionId, response);
     }
 
+    void handleBroadcastRequest(const int &connectionId, const Message &msg)
+    {
+        printf("Received message: %s\n", msg.serialize().c_str());
+        std::string content = msg.content;
+        content.erase(0, strlen(CLIENT_BROADCAST_REQUEST_PREFIX.c_str()) + 1);
+
+        BroadcastResponseMessage broadcastResponse(connectionId, content);
+        messenger->broadcastMessage(connectionId, broadcastResponse);
+    }
+
     int start()
     {
+        // Establish connection
         std::string establish_connection_response_handler_path = CLIENT_ESTABLISH_CONNECTION_REQUEST_PREFIX;
         auto establish_connection_response_handler = std::bind(&Server::handleEstablishConnectionRequest, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(establish_connection_response_handler_path, establish_connection_response_handler);
 
+        // Drop connection
         std::string drop_connection_response_handler_path = CLIENT_DROP_CONNECTION_REQUEST_PREFIX;
         auto drop_connection_response_handler = std::bind(&Server::handleDropConnectionRequest, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(drop_connection_response_handler_path, drop_connection_response_handler);
 
+        // Register
         std::string register_response_handler_path = CLIENT_REGISTER_REQUEST_PREFIX;
         auto register_response_handler = std::bind(&Server::handleRegisterRequest, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(register_response_handler_path, register_response_handler);
 
+        // Login
         std::string login_response_handler_path = CLIENT_LOGIN_REQUEST_PREFIX;
         auto login_response_handler = std::bind(&Server::handleLoginRequest, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(login_response_handler_path, login_response_handler);
 
+        // Broadcast
+        std::string broadcast_handler_path = CLIENT_BROADCAST_REQUEST_PREFIX;
+        auto broadcast_handler = std::bind(&Server::handleBroadcastRequest, this, std::placeholders::_1, std::placeholders::_2);
+        messenger->registerHandler(broadcast_handler_path, broadcast_handler);
         return messenger->start();
     }
 

@@ -42,8 +42,6 @@ public:
         std::getline(iss, username, ';');
         std::getline(iss, password, ';');
 
-        std::cout << username << std::endl;
-
         return User(username, password);
     }
 };

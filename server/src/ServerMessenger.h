@@ -72,19 +72,6 @@ private:
         connectedClients->remove(clientSocket);
     }
 
-    void broadcastMessage(int senderId, const Message &message)
-    {
-        Node<int> *current = connectedClients->getHead();
-        while (current != nullptr)
-        {
-            if (current->getValue() != senderId)
-            {
-                sendMessageToClient(current->getValue(), message);
-            }
-            current = current->getNext();
-        }
-    }
-
 public:
     ServerMessenger(unsigned int port)
         : BaseMessenger(), port(port), connectedClients(new LinkedList<int>()), messages(new LinkedList<Message>())
@@ -103,6 +90,20 @@ public:
     {
         delete connectedClients;
         delete messages;
+    }
+
+    void broadcastMessage(int senderId, const Message &message)
+    {
+        Node<int> *current = connectedClients->getHead();
+        while (current != nullptr)
+        {
+            if (current->getValue() != senderId)
+            {
+                printf("Sending message to client %d\n", current->getValue());
+                sendMessageToClient(current->getValue(), message);
+            }
+            current = current->getNext();
+        }
     }
 
     ssize_t sendMessageToClient(int clientSocket, const Message &message)

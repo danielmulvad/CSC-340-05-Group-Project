@@ -142,4 +142,16 @@ struct LoginResponseMessage : public Message
     LoginResponseMessage(const int &connection_id, const LoginResponseCode &response_code) : Message(connection_id, SERVER_TO_CLIENT, SERVER_LOGIN_RESPONSE_PREFIX + " " + std::to_string(response_code)) {}
 };
 
+// Broadcast
+const static std::string CLIENT_BROADCAST_REQUEST_PREFIX = "BROADCAST_REQUEST";
+const static std::string SERVER_BROADCAST_RESPONSE_PREFIX = "BROADCAST_RESPONSE";
+struct BroadcastRequestMessage : public Message
+{
+    BroadcastRequestMessage(const int &connection_id, const std::string &msg) : Message(connection_id, MessageTarget::CLIENT_TO_SERVER, CLIENT_BROADCAST_REQUEST_PREFIX + " " + msg) {}
+};
+struct BroadcastResponseMessage : public Message
+{
+    BroadcastResponseMessage(const int &connection_id, const std::string &msg) : Message(connection_id, MessageTarget::BROADCAST, SERVER_BROADCAST_RESPONSE_PREFIX + " " + msg) {}
+};
+
 #endif
