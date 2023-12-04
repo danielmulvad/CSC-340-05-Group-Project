@@ -1,8 +1,6 @@
 #ifndef __MENU_H__
 #define __MENU_H__
 
-#include <stdio.h>
-
 enum LoginMenuOption
 {
     LOGIN = 1,
