@@ -48,13 +48,13 @@ private:
             std::cin >> option;
             switch (option)
             {
-            case LOGIN:
+            case LoginMenuOption::LOGIN:
                 handleLogin();
                 break;
-            case REGISTER:
+            case LoginMenuOption::REGISTER:
                 handleRegister();
                 break;
-            case QUIT_LOGIN:
+            case LoginMenuOption::QUIT_LOGIN:
                 handleStop();
                 break;
             default:
@@ -68,14 +68,70 @@ private:
     {
         std::cout << "Pattern matched: " << connectionId << msg << std::endl;
 
-        // TODO: Handle possible error code. Once logged in, move to chat
+        std::vector<std::string> parts;
+        std::stringstream ss(msg.content);
+        std::string part;
+
+        while (std::getline(ss, part, ' '))
+        {
+            parts.push_back(part);
+        }
+
+        const size_t expectedParts = 2;
+        if (parts.size() != expectedParts)
+        {
+            printf("Invalid serialized message format for %s\n", msg.serialize().c_str());
+            return;
+        }
+
+        RegisterResponseCode responseCode = static_cast<RegisterResponseCode>(std::stoi(parts[1]));
+        switch (responseCode)
+        {
+        case RegisterResponseCode::REGISTER_SUCCESS:
+            printf("Login successful\n");
+            break;
+        case RegisterResponseCode::REGISTER_FAILED:
+            printf("Login failed\n");
+            break;
+        default:
+            printf("Invalid response code\n");
+            break;
+        }
     }
 
     void registerHandler(const int &connectionId, const Message &msg)
     {
         std::cout << "Pattern matched: " << connectionId << msg << std::endl;
 
-        // TODO: Handle possible error code
+        std::vector<std::string> parts;
+        std::stringstream ss(msg.content);
+        std::string part;
+
+        while (std::getline(ss, part, ' '))
+        {
+            parts.push_back(part);
+        }
+
+        const size_t expectedParts = 2;
+        if (parts.size() != expectedParts)
+        {
+            printf("Invalid serialized message format for %s\n", msg.serialize().c_str());
+            return;
+        }
+
+        RegisterResponseCode responseCode = static_cast<RegisterResponseCode>(std::stoi(parts[1]));
+        switch (responseCode)
+        {
+        case RegisterResponseCode::REGISTER_SUCCESS:
+            printf("Register successful\n");
+            break;
+        case RegisterResponseCode::REGISTER_FAILED:
+            printf("Register failed\n");
+            break;
+        default:
+            printf("Invalid response code\n");
+            break;
+        }
     }
 
     void establishConnectionHandler(const int &connectionId, const Message &msg)

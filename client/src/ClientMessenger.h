@@ -28,7 +28,7 @@ private:
 
         if (inet_pton(AF_INET, serverAddress.c_str(), &serv_addr.sin_addr) <= 0)
         {
-            throw std::runtime_error("Invalid address/ Address not supported");
+            throw std::runtime_error("Invalid address or address not supported");
         }
 
         int socketId = connect(socket_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));

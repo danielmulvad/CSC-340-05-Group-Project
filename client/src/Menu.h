@@ -23,12 +23,6 @@ public:
         printf("2. Register\n");
         printf("3. Quit\n");
     }
-
-    static void showRegistrationMenu()
-    {
-        printf("1. Register\n");
-        printf("2. Quit\n");
-    }
 };
 
 #endif // __MENU_H__
