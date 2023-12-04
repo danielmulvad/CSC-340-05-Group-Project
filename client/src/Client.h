@@ -102,19 +102,19 @@ public:
 
     int start()
     {
-        std::string establish_connection_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX;
+        std::string establish_connection_handler_pattern = SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX;
         auto establish_connection_handler = std::bind(&Client::establishConnectionHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(establish_connection_handler_pattern, establish_connection_handler);
 
-        std::string drop_connection_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_DROP_CONNECTION_RESPONSE_PREFIX;
+        std::string drop_connection_handler_pattern = SERVER_DROP_CONNECTION_RESPONSE_PREFIX;
         auto drop_connection_handler = std::bind(&Client::dropConnectionHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(drop_connection_handler_pattern, drop_connection_handler);
 
-        std::string login_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_LOGIN_RESPONSE_PREFIX;
+        std::string login_handler_pattern = SERVER_LOGIN_RESPONSE_PREFIX;
         auto login_handler = std::bind(&Client::loginHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(login_handler_pattern, login_handler);
 
-        std::string register_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_REGISTER_RESPONSE_PREFIX;
+        std::string register_handler_pattern = SERVER_REGISTER_RESPONSE_PREFIX;
         auto register_handler = std::bind(&Client::registerHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(register_handler_pattern, register_handler);
 

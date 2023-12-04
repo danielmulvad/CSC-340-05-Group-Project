@@ -99,7 +99,7 @@ public:
         }
     }
 
-    ~ServerMessenger()
+    virtual ~ServerMessenger()
     {
         delete connectedClients;
         delete messages;
