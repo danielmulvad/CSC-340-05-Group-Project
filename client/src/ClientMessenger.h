@@ -72,7 +72,7 @@ public:
         EstablishConnectionRequestMessage connectionMessage(connectionId);
         sendMessageToServer(connectionMessage);
 
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     int stop() override
@@ -86,7 +86,7 @@ public:
             }
             close(socket_fd);
         }
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     void sendMessageToServer(const Message &msg)

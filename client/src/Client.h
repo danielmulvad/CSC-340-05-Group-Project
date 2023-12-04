@@ -17,7 +17,7 @@ private:
         std::cin >> username;
         printf("Enter password: ");
         std::cin >> password;
-        LoginRequestMessage loginMessage(messenger->getConnectionId(), username, password);
+        RegisterRequestMessage loginMessage(messenger->getConnectionId(), username, password);
         messenger->sendMessageToServer(loginMessage);
     }
 
@@ -28,9 +28,8 @@ private:
         std::cin >> username;
         printf("Enter password: ");
         std::cin >> password;
-        std::string loginMessage = CLIENT_TO_SERVER_PREFIX + " " + CLIENT_LOGIN_PREFIX + " " + username + " " + password;
-        Message msg(messenger->getConnectionId(), loginMessage);
-        messenger->sendMessageToServer(msg);
+        LoginRequestMessage loginMessage(messenger->getConnectionId(), username, password);
+        messenger->sendMessageToServer(loginMessage);
     }
 
     void handleStop()
@@ -68,6 +67,15 @@ private:
     void loginHandler(const int &connectionId, const Message &msg)
     {
         std::cout << "Pattern matched: " << connectionId << msg << std::endl;
+
+        // TODO: Handle possible error code. Once logged in, move to chat
+    }
+
+    void registerHandler(const int &connectionId, const Message &msg)
+    {
+        std::cout << "Pattern matched: " << connectionId << msg << std::endl;
+
+        // TODO: Handle possible error code
     }
 
     void establishConnectionHandler(const int &connectionId, const Message &msg)
@@ -78,8 +86,6 @@ private:
         content.erase(0, content.find(delimiter) + delimiter.length());
         int newConnectionId = std::stoi(content);
         messenger->setConnectionId(newConnectionId);
-        std::cout
-            << "Pattern matched: " << newConnectionId << " " << msg << std::endl;
     }
 
     void dropConnectionHandler(const int &connectionId, const Message &msg)
@@ -92,6 +98,10 @@ public:
     Client() : Client(8080) {}
     Client(unsigned int port) : messenger(new ClientMessenger("0.0.0.0", port))
     {
+    }
+
+    int start()
+    {
         std::string establish_connection_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX;
         auto establish_connection_handler = std::bind(&Client::establishConnectionHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(establish_connection_handler_pattern, establish_connection_handler);
@@ -100,12 +110,24 @@ public:
         auto drop_connection_handler = std::bind(&Client::dropConnectionHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(drop_connection_handler_pattern, drop_connection_handler);
 
-        std::string login_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + CLIENT_LOGIN_PREFIX;
+        std::string login_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_LOGIN_RESPONSE_PREFIX;
         auto login_handler = std::bind(&Client::loginHandler, this, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(login_handler_pattern, login_handler);
 
+        std::string register_handler_pattern = SERVER_TO_CLIENT_PREFIX + " " + SERVER_REGISTER_RESPONSE_PREFIX;
+        auto register_handler = std::bind(&Client::registerHandler, this, std::placeholders::_1, std::placeholders::_2);
+        messenger->registerHandler(register_handler_pattern, register_handler);
+
         messenger->start();
+
         handleMainMenu();
+        return EXIT_SUCCESS;
+    }
+
+    int stop()
+    {
+
+        return messenger->stop();
     }
 
     ~Client()
