@@ -89,8 +89,6 @@ private:
 
     void loginHandler(const int &connectionId, const Message &msg)
     {
-        std::cout << "Pattern matched: " << connectionId << msg << std::endl;
-
         std::vector<std::string> parts;
         std::stringstream ss(msg.content);
         std::string part;
@@ -124,8 +122,6 @@ private:
 
     void registerHandler(const int &connectionId, const Message &msg)
     {
-        std::cout << "Pattern matched: " << connectionId << msg << std::endl;
-
         std::vector<std::string> parts;
         std::stringstream ss(msg.content);
         std::string part;
@@ -168,7 +164,6 @@ private:
 
     void dropConnectionHandler(const int &connectionId, const Message &msg)
     {
-        std::cout << "Pattern matched: " << msg << std::endl;
         std::unique_lock<std::mutex> lock(exitMutex);
         finished = true;
         exitConditionVariable.notify_one(); // Notify exit
@@ -181,7 +176,6 @@ private:
 
     void broadcastHandler(const int &connectionId, const Message &msg)
     {
-        std::cout << "Pattern matched: " << msg << std::endl;
         std::vector<std::string> parts;
         std::stringstream ss(msg.content);
         std::string part;
