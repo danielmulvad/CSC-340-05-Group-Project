@@ -2,6 +2,8 @@
 #define _CLIENT_H_
 
 #include "../../common/Message.h"
+#include "./Menu.h"
+#include "./Messenger.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <string>
@@ -11,184 +13,81 @@
 class Client
 {
 private:
-    bool isConnectionEstablished = false;
-    bool running;
-    const unsigned int port;
-    int connectionId;
-    int socket_fd;
-    std::condition_variable connectionEstablishedCondition;
-    std::mutex connectionMutex;
-    std::mutex consoleMutex;
+    Messenger *messenger;
 
-    void setupConnection()
+    void handleRegister()
     {
-        struct sockaddr_in serv_addr;
-        socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (socket_fd < 0)
-        {
-            perror("Socket creation error");
-            exit(EXIT_FAILURE);
-        }
-
-        serv_addr.sin_family = AF_INET;
-        serv_addr.sin_port = htons(port);
-
-        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
-        {
-            perror("Invalid address/ Address not supported");
-            exit(EXIT_FAILURE);
-        }
-
-        if (connect(socket_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-        {
-            perror("Connection Failed");
-            exit(EXIT_FAILURE);
-        }
-        return;
+        std::string username, password;
+        printf("Enter username: ");
+        std::cin >> username;
+        printf("Enter password: ");
+        std::cin >> password;
+        LoginRequestMessage loginMessage(messenger->getConnectionId(), username, password);
+        messenger->sendMessageToServer(loginMessage);
     }
 
-    void sendEstablishConnectionRequest()
+    void handleLogin()
     {
-        std::string connectionMessage = CLIENT_TO_SERVER_PREFIX + " " + CLIENT_ESTABLISH_CONNECTION_REQUEST_PREFIX;
-        Message helloMsg(connectionId, connectionMessage);
-        sendMessageToServer(helloMsg);
-        printf("Establish connection request sent\n");
+        std::string username, password;
+        printf("Enter username: ");
+        std::cin >> username;
+        printf("Enter password: ");
+        std::cin >> password;
+        std::string loginMessage = CLIENT_TO_SERVER_PREFIX + " " + CLIENT_LOGIN_PREFIX + " " + username + " " + password;
+        Message msg(messenger->getConnectionId(), loginMessage);
+        messenger->sendMessageToServer(msg);
     }
 
-    bool handleServerToClientMessage(const Message &msg)
+    void handleStop()
     {
-        std::string connectionResponseMessage = SERVER_TO_CLIENT_PREFIX + " " + SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX;
-        if (msg.content.find(connectionResponseMessage) != std::string::npos)
-        {
-            std::string connectionIdStr = msg.content.substr(connectionResponseMessage.length() + 1);
-            connectionId = std::stoi(connectionIdStr);
-            printf("Connection established with id %d\n", connectionId);
-
-            std::lock_guard<std::mutex> lock(connectionMutex);
-            isConnectionEstablished = true;
-            connectionEstablishedCondition.notify_one();
-
-            return true;
-        }
-        return false;
+        messenger->stop();
     }
 
-    void listenForMessages()
+    void handleMainMenu()
     {
-        fd_set readfds;
-        struct timeval tv;
-
-        while (running)
+        int option;
+        do
         {
-            FD_ZERO(&readfds);
-            FD_SET(socket_fd, &readfds);
-
-            // Set timeout to 1 second
-            tv.tv_sec = 1;
-            tv.tv_usec = 0;
-
-            int activity = select(socket_fd + 1, &readfds, NULL, NULL, &tv);
-
-            if (activity < 0 && errno != EINTR)
+            Menu::showLoginMenu();
+            printf("Enter option: ");
+            std::cin >> option;
+            switch (option)
             {
-                perror("select error");
+            case LOGIN:
+                handleLogin();
+                break;
+            case REGISTER:
+                handleRegister();
+                break;
+            case QUIT_LOGIN:
+                handleStop();
+                break;
+            default:
+                printf("Invalid option\n");
                 break;
             }
+        } while (option != QUIT_LOGIN);
+    }
 
-            if (FD_ISSET(socket_fd, &readfds))
-            {
-                char buffer[1024] = {0};
-                ssize_t valread = read(socket_fd, buffer, sizeof(buffer) - 1);
-                if (valread > 0)
-                {
-                    Message receivedMsg = Message::deserialize(std::string(buffer));
-                    if (!handleServerToClientMessage(receivedMsg))
-                    {
-                        // Not a server to client message
-                        printf("\n%s\n", receivedMsg.toString().c_str());
-                    }
-                    fflush(stdout);
-                }
-            }
-        }
+    void loginHandler(const Message &msg)
+    {
+        std::cout << "Pattern matched: " << msg.content << std::endl;
     }
 
 public:
     Client() : Client(8080) {}
-    Client(unsigned int port) : running(true), port(port), connectionId(0)
+    Client(unsigned int port) : messenger(new Messenger(port))
     {
-        if (port > 65535)
-        {
-            throw std::invalid_argument("Port must be less than 65535");
-        }
-        else if (port < 1024)
-        {
-            throw std::invalid_argument("Port must be greater than 1024");
-        }
+        std::string login_handler_pattern = CLIENT_TO_SERVER_PREFIX + " " + CLIENT_LOGIN_PREFIX;
+        messenger->registerHandler(login_handler_pattern, std::bind(&Client::loginHandler, this, std::placeholders::_1));
+        messenger->start();
+        handleMainMenu();
     }
 
     ~Client()
     {
-        running = false;
-        if (socket_fd > 0)
-        {
-            close(socket_fd);
-        }
-    }
-
-    void sendMessageToServer(const Message &msg)
-    {
-        std::string serializedMsg = msg.serialize();
-        send(socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
-    }
-
-    void checkForInput()
-    {
-        while (running)
-        {
-            std::unique_lock<std::mutex> lock(consoleMutex);
-            std::cout << "Enter message (type 'exit' to quit): ";
-            std::string inputMsg;
-            if (std::getline(std::cin, inputMsg))
-            {
-                sendMessageToServer(Message(connectionId, inputMsg));
-            }
-            lock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    int run()
-    {
-        setupConnection();
-
-        std::thread listenerThread(&Client::listenForMessages, this);
-
-        sendEstablishConnectionRequest();
-
-        {
-            std::unique_lock<std::mutex> lock(connectionMutex);
-            connectionEstablishedCondition.wait(lock, [this]()
-                                                { return isConnectionEstablished; });
-        }
-
-        while (true)
-        {
-            std::string inputMsg;
-            std::cout << "Enter message (type 'exit' to quit): ";
-            std::getline(std::cin, inputMsg);
-
-            if (inputMsg == "exit")
-                break;
-
-            Message helloMsg(connectionId, inputMsg);
-            sendMessageToServer(helloMsg);
-        }
-
-        running = false;
-        listenerThread.join();
-        return 0;
+        delete messenger;
     }
 };
 
-#endif
+#endif // _CLIENT_H_
