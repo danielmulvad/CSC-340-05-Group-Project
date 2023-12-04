@@ -147,9 +147,9 @@ private:
         case RegisterResponseCode::REGISTER_FAILED:
         default:
             printf("Register failed\n");
-            handleMainMenu();
             break;
         }
+        handleMainMenu();
     }
 
     void establishConnectionHandler(const int &connectionId, const Message &msg)
