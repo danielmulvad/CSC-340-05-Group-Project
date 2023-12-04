@@ -79,10 +79,9 @@ private:
             {
                 // Establish connection request
                 int newConnectionId = clientSocket;
-                std::string connectionMessage = SERVER_TO_CLIENT_PREFIX + " " + SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX + " " + std::to_string(newConnectionId);
-                Message replyMsg(newConnectionId, connectionMessage);
-                sendMessageToClient(clientSocket, replyMsg);
-                std::cout << replyMsg << std::endl;
+                EstablishConnectionResponseMessage connectionMessage(newConnectionId);
+                sendMessageToClient(clientSocket, connectionMessage);
+                std::cout << connectionMessage << std::endl;
                 return true;
             }
         }
@@ -169,4 +168,4 @@ public:
     }
 };
 
-#endif
+#endif // _SERVER_H_

@@ -111,4 +111,4 @@ private:
     int size;
 };
 
-#endif
+#endif // _LINKEDLIST_H_

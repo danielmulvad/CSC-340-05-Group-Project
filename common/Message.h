@@ -12,6 +12,14 @@ const static std::string CLIENT_TO_SERVER_PREFIX = "_CLIENT_TO_SERVER_";
 const static std::string CLIENT_ESTABLISH_CONNECTION_REQUEST_PREFIX = "ESTABLISH_CONNECTION_REQUEST";
 const static std::string SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX = "ESTABLISH_CONNECTION_RESPONSE";
 
+// Register
+const static std::string CLIENT_REGISTER_PREFIX = "REGISTER_REQUEST";
+const static std::string SERVER_REGISTER_RESPONSE_PREFIX = "REGISTER_RESPONSE";
+
+// Login
+const static std::string CLIENT_LOGIN_PREFIX = "LOGIN_REQUEST";
+const static std::string SERVER_LOGIN_RESPONSE_PREFIX = "LOGIN_RESPONSE";
+
 // Drop connection
 const static std::string CLIENT_DROP_CONNECTION_REQUEST_PREFIX = "DROP_CONNECTION_REQUEST";
 const static std::string SERVER_DROP_CONNECTION_RESPONSE_PREFIX = "DROP_CONNECTION_RESPONSE";
@@ -80,6 +88,45 @@ struct Message
     {
         return lhs.timestamp == rhs.timestamp && lhs.content == rhs.content;
     }
+};
+
+// Establish Connection
+struct EstablishConnectionRequestMessage : public Message
+{
+    EstablishConnectionRequestMessage(const int &connection_id) : Message(connection_id, CLIENT_TO_SERVER_PREFIX + " " + CLIENT_ESTABLISH_CONNECTION_REQUEST_PREFIX) {}
+};
+
+struct EstablishConnectionResponseMessage : public Message
+{
+    EstablishConnectionResponseMessage(const int &connection_id) : Message(connection_id, SERVER_TO_CLIENT_PREFIX + " " + SERVER_ESTABLISH_CONNECTION_RESPONSE_PREFIX + " " + std::to_string(connection_id)) {}
+};
+
+// Drop Connection
+struct DropConnectionRequestMessage : public Message
+{
+    DropConnectionRequestMessage(const int &connection_id) : Message(connection_id, CLIENT_TO_SERVER_PREFIX + " " + CLIENT_DROP_CONNECTION_REQUEST_PREFIX) {}
+};
+
+struct DropConnectionResponseMessage : public Message
+{
+    DropConnectionResponseMessage(const int &connection_id) : Message(connection_id, SERVER_TO_CLIENT_PREFIX + " " + SERVER_DROP_CONNECTION_RESPONSE_PREFIX + " " + std::to_string(connection_id)) {}
+};
+
+// Login
+struct LoginRequestMessage : public Message
+{
+    LoginRequestMessage(const int &connection_id, const std::string &username, const std::string &password) : Message(connection_id, CLIENT_TO_SERVER_PREFIX + " " + CLIENT_LOGIN_PREFIX + " " + username + " " + password) {}
+};
+
+enum LoginResponseCode
+{
+    LOGIN_SUCCESS = 1,
+    LOGIN_FAILED = 2
+};
+
+struct LoginResponseMessage : public Message
+{
+    LoginResponseMessage(const int &connection_id, const LoginResponseCode &response_code) : Message(connection_id, SERVER_TO_CLIENT_PREFIX + " " + SERVER_LOGIN_RESPONSE_PREFIX + " " + std::to_string(response_code)) {}
 };
 
 #endif
