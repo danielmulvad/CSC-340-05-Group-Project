@@ -3,6 +3,7 @@
 
 #include <thread>
 #include "./Menu.h"
+#include "./Test.h"
 
 class Handlers
 {
@@ -61,7 +62,7 @@ public:
     void handleMainMenu()
     {
         int option;
-
+      
         Menu::showLoginMenu();
         printf("Enter option: ");
         std::cin >> option;
@@ -76,6 +77,11 @@ public:
             break;
         case LoginMenuOption::QUIT_LOGIN:
             handleStop();
+            break;
+        case LoginMenuOption::PROMPT_UNIT_TEST:
+            printf("------------------TEST------------------\n");
+            promptUnitTest();
+            printf("------------------TEST------------------\n");
             break;
         default:
             printf("Invalid option\n");

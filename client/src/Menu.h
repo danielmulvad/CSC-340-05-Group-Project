@@ -5,7 +5,8 @@ enum LoginMenuOption
 {
     LOGIN = 1,
     REGISTER = 2,
-    QUIT_LOGIN = 3
+    QUIT_LOGIN = 3,
+    PROMPT_UNIT_TEST = 4
 };
 
 enum MainMenuOption
@@ -22,6 +23,7 @@ public:
         printf("1. Login\n");
         printf("2. Register\n");
         printf("3. Quit\n");
+        printf("4. Start Unit Test\n");
     }
 };
 
