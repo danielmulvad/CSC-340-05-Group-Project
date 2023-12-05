@@ -18,5 +18,6 @@
 
 # Misc
 !.gitignore
-!Makefile
 !*.md
+!Doxyfile
+!Makefile
