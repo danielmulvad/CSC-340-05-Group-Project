@@ -1,6 +1,8 @@
-#pragma once
 #ifndef __MENU_H__
 #define __MENU_H__
+
+#include <iostream>
+#include "BaseMessengerTest.h" // Include the test file
 
 enum LoginMenuOption
 {
@@ -15,29 +17,23 @@ enum MainMenuOption
     QUIT = 2
 };
 
+enum TestMenuOption
+{
+    RUN_BASE_MESSENGER_TESTS = 1,
+    BACK_TO_MAIN_MENU = 2
+};
+
 class Menu
 {
 public:
-    static void showLoginMenu()
-    {
-        cout << "--------------------------------" << endl;
-        cout << "Login Menu:\n";
-        cout << "--------------------------------" << endl;
-        cout << "   |" << LOGIN << "|" << " Login\n";
-        cout << "   |" << REGISTER << "|" << " Register\n";
-        cout << "   |" << LOGOUT << "|" << " Logout\n";
-        cout << "--------------------------------" << endl;
-    }
+    static void showLoginMenu();
+    static void showMessagingMenu();
+    static void showTestMenu();
+    static void runTests();
 
-    static void showMainMenu()
-    {
-        cout << "--------------------------------" << endl;
-        cout << "Main Menu:\n";
-        cout << "--------------------------------" << endl;
-        cout << "   |" << START_MESSAGING << "|" << " Start Messaging\n";
-        cout << "   |" << QUIT << "|" << " Quit\n";
-        cout << "--------------------------------" << endl;
-    }
+private:
+    static void runBaseMessengerTests();
+    static void runHandlersTests();
 };
 
 #endif // __MENU_H__
