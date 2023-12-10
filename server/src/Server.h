@@ -53,6 +53,12 @@ public:
         std::string broadcast_handler_path = CLIENT_BROADCAST_REQUEST_PREFIX;
         auto broadcast_handler = std::bind(&Handlers::handleBroadcastRequest, handlers, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(broadcast_handler_path, broadcast_handler);
+
+        // Search
+        std::string search_handler_path = CLIENT_SEARCH_REQUEST_PREFIX;
+        auto search_handler = std::bind(&Handlers::handleSearchRequest, handlers, std::placeholders::_1, std::placeholders::_2);
+        messenger->registerHandler(search_handler_path, search_handler);
+
         return messenger->start();
     }
 

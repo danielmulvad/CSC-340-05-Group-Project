@@ -50,6 +50,11 @@ public:
         auto broadcast_handler = std::bind(&Handlers::broadcastHandler, handlers, std::placeholders::_1, std::placeholders::_2);
         messenger->registerHandler(broadcast_handler_pattern, broadcast_handler);
 
+        // Search
+        std::string search_handler_pattern = SERVER_SEARCH_RESPONSE_PREFIX;
+        auto search_handler = std::bind(&Handlers::searchHandler, handlers, std::placeholders::_1, std::placeholders::_2);
+        messenger->registerHandler(search_handler_pattern, search_handler);
+
         return messenger->start();
     }
 

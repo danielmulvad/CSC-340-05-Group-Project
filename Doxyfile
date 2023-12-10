@@ -2599,7 +2599,7 @@ DOT_UML_DETAILS        = YES
 # Minimum value: 0, maximum value: 1000, default value: 17.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_WRAP_THRESHOLD     = 17
+DOT_WRAP_THRESHOLD     = 1000
 
 # If the TEMPLATE_RELATIONS tag is set to YES then the inheritance and
 # collaboration graphs will show the relations between templates and their
@@ -2695,7 +2695,7 @@ DIR_GRAPH_MAX_DEPTH    = 1
 # The default value is: png.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_IMAGE_FORMAT       = svg
+DOT_IMAGE_FORMAT       = png
 
 # If DOT_IMAGE_FORMAT is set to svg, then this option can be set to YES to
 # enable generation of interactive SVG images that allow zooming and panning.

@@ -141,6 +141,28 @@ public:
         close(server_fd);
         return EXIT_SUCCESS;
     };
+
+    void addMessage(const Message &message)
+    {
+        std::string content = message.content.substr(strlen(SERVER_BROADCAST_RESPONSE_PREFIX.c_str()));
+        Message newMessage(message.user_id, MessageTarget::BROADCAST, message.timestamp, content);
+        messages->add(newMessage);
+    }
+
+    std::vector<Message> getMessages(const std::string &message)
+    {
+        std::vector<Message> result;
+        Node<Message> *current = messages->getHead();
+        while (current != nullptr)
+        {
+            if (current->getValue().content.find(message) != std::string::npos)
+            {
+                result.push_back(current->getValue());
+            }
+            current = current->getNext();
+        }
+        return result;
+    }
 };
 
 #endif

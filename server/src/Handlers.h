@@ -116,8 +116,24 @@ public:
         std::string content = msg.content;
         content.erase(0, strlen(CLIENT_BROADCAST_REQUEST_PREFIX.c_str()) + 1);
 
+        this->messenger->addMessage(msg);
+
         BroadcastResponseMessage broadcastResponse(connectionId, content);
         messenger->broadcastMessage(connectionId, broadcastResponse);
+    }
+
+    void handleSearchRequest(const int &connectionId, const Message &msg)
+    {
+        std::string content = msg.content;
+        content.erase(0, strlen(CLIENT_SEARCH_REQUEST_PREFIX.c_str()) + 1);
+
+        std::vector<Message> messages = this->messenger->getMessages(content);
+        for (auto message : messages)
+        {
+            SearchResponseMessage searchResponse(message);
+            messenger->sendMessageToClient(connectionId, searchResponse);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
     }
 };
 

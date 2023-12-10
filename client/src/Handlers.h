@@ -41,17 +41,29 @@ public:
         messenger->sendMessageToServer(dropConnectionRequestMessage);
     }
 
+    void handleSearch(std::string &message)
+    {
+        std::string searchQuery = message.substr(strlen("/search") + 1);
+        SearchRequestMessage searchRequestMessage(messenger->getConnectionId(), searchQuery);
+        messenger->sendMessageToServer(searchRequestMessage);
+    }
+
     void startMessaging()
     {
+        printf("Enter message (type '/exit' to quit):\n");
         while (true)
         {
             std::string message;
-            printf("Enter message (type '/exit' to quit): ");
             getline(std::cin, message);
             if (message == "/exit")
             {
                 handleStop();
                 return;
+            }
+            if (message.find("/search") != std::string::npos)
+            {
+                handleSearch(message);
+                continue;
             }
             BroadcastRequestMessage msg(messenger->getConnectionId(), message);
             messenger->sendMessageToServer(msg);
@@ -185,6 +197,24 @@ public:
         Message broadcastMessage = Message(msg.user_id, MessageTarget::BROADCAST, msg.timestamp, content);
 
         std::cout << broadcastMessage << std::endl;
+    }
+
+    void searchHandler(const int &connectionId, const Message &msg)
+    {
+        std::vector<std::string> parts;
+        std::stringstream ss(msg.content);
+        std::string part;
+
+        while (std::getline(ss, part, ' '))
+        {
+            parts.push_back(part);
+        }
+
+        std::string content = msg.content;
+        content.erase(0, strlen(SERVER_SEARCH_RESPONSE_PREFIX.c_str()) + 1);
+        Message searchMessage = Message(msg.user_id, MessageTarget::BROADCAST, msg.timestamp, content);
+
+        std::cout << searchMessage << std::endl;
     }
 };
 
