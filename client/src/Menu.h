@@ -1,5 +1,7 @@
-#ifndef __MENU_H__
-#define __MENU_H__
+#ifndef _MENU_H_
+#define _MENU_H_
+
+#include <iostream>
 
 enum LoginMenuOption
 {
@@ -8,21 +10,10 @@ enum LoginMenuOption
     QUIT_LOGIN = 3
 };
 
-enum MainMenuOption
-{
-    START_MESSAGING = 1,
-    QUIT = 2
-};
-
 class Menu
 {
 public:
-    static void showLoginMenu()
-    {
-        printf("1. Login\n");
-        printf("2. Register\n");
-        printf("3. Quit\n");
-    }
+    static void showLoginMenu();
 };
 
-#endif // __MENU_H__
+#endif // _MENU_H_

@@ -4,15 +4,18 @@
 # Source
 !client/
 !client/src/
+!client/src/**/
 !client/src/**/*.cpp
 !client/src/**/*.h
 
 !common/
+!common/**/
 !common/**/*.cpp
 !common/**/*.h
 
 !server/
 !server/src/
+!server/src/**/
 !server/src/**/*.cpp
 !server/src/**/*.h
 
