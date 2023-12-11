@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-std=c++11 -Wall
-GTEST_FLAGS=-lgtest -lgtest_main -pthread
+GTEST_FLAGS=-lgmock -lgtest -lgtest_main -pthread
 
 COMMON_DIR=./common
 SERVER_DIR=./server/src

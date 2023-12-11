@@ -6,14 +6,14 @@ void ServerMessenger::setupConnection()
     struct sockaddr_in address;
     int opt = 1;
 
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    server_fd = createSocket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0)
     {
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
 
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
+    if (setSocketOptions(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
     {
         perror("setsockopt");
         exit(EXIT_FAILURE);
@@ -23,18 +23,18 @@ void ServerMessenger::setupConnection()
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
+    if (bindSocket(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
 
-    if (listen(server_fd, 3) < 0)
+    if (listenSocket(server_fd, 3) < 0)
     {
         perror("listen");
         exit(EXIT_FAILURE);
     }
-};
+}
 
 void ServerMessenger::handleClient(int clientSocket)
 {
@@ -108,7 +108,7 @@ int ServerMessenger::start()
         struct sockaddr_in address;
         socklen_t addrlen = sizeof(address);
 
-        int new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
+        int new_socket = acceptSocket(server_fd, (struct sockaddr *)&address, &addrlen);
         if (new_socket < 0)
         {
             perror("accept");
@@ -125,7 +125,7 @@ int ServerMessenger::start()
 int ServerMessenger::stop()
 {
     running = false;
-    close(server_fd);
+    closeSocket(server_fd);
     return EXIT_SUCCESS;
 };
 
