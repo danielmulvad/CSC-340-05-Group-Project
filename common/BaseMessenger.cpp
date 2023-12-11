@@ -1,5 +1,14 @@
 #include "./BaseMessenger.h"
 
+BaseMessenger::BaseMessenger() : running(false), socket_fd(-1) {}
+BaseMessenger::~BaseMessenger()
+{
+    if (socket_fd > 0)
+    {
+        close(socket_fd);
+    }
+}
+
 void BaseMessenger::processReceivedMessage(const int &connectionId, const Message &msg, const bool debug)
 {
     for (const auto &entry : router)
@@ -16,15 +25,6 @@ void BaseMessenger::processReceivedMessage(const int &connectionId, const Messag
     }
     std::cout << "Received an unhandled message: " << msg.toString() << std::endl;
 };
-
-BaseMessenger::BaseMessenger() : running(false), socket_fd(-1) {}
-BaseMessenger::~BaseMessenger()
-{
-    if (socket_fd > 0)
-    {
-        close(socket_fd);
-    }
-}
 
 void BaseMessenger::registerHandler(const std::string &path, MessageHandler handler)
 {

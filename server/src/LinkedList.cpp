@@ -73,17 +73,28 @@ void LinkedList<V>::remove(V value)
     {
         if (current->getValue() == value)
         {
+            // If removing the head node
             if (previous == nullptr)
             {
                 head = current->getNext();
+                // If the list becomes empty after removing the head, update the tail to nullptr
+                if (head == nullptr)
+                {
+                    tail = nullptr;
+                }
             }
             else
             {
                 previous->setNext(current->getNext());
+                // If removing the last node, update the tail to the previous node
+                if (current->getNext() == nullptr)
+                {
+                    tail = previous;
+                }
             }
-            delete current;
             size--;
-            return;
+            delete current;
+            break;
         }
         previous = current;
         current = current->getNext();

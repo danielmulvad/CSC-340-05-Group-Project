@@ -19,6 +19,11 @@
 !server/src/**/*.cpp
 !server/src/**/*.h
 
+!tests/
+!tests/**/
+!tests/**/*.cpp
+!tests/**/*.h
+
 # Misc
 !.gitignore
 !*.md

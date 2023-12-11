@@ -15,7 +15,6 @@ Client::Client(unsigned int port) : messenger(new ClientMessenger("0.0.0.0", por
 
 Client::~Client()
 {
-    delete this->messenger;
     delete this->handlers;
 }
 
