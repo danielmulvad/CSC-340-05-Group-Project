@@ -55,7 +55,7 @@ int ClientMessenger::start()
     running = true;
     listenerThread = std::thread(&ClientMessenger::listenForMessages, this);
 
-    EstablishConnectionRequestMessage connectionMessage(connectionId);
+    EstablishConnectionRequestMessage connectionMessage(connectionId, "");
     sendMessageToServer(connectionMessage);
 
     std::mutex mutex;

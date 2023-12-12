@@ -14,13 +14,14 @@ enum MessageTarget
 struct Message
 {
 public:
-    int user_id;
+    int connectionId;
+    std::string username;
     MessageTarget target;
     std::string content;
     std::string timestamp;
 
-    Message(const int &user_id, const MessageTarget &target, const std::string &msg);
-    Message(const int &user_id, const MessageTarget &target, const std::string &ts, const std::string &msg);
+    Message(const int &connectionId, const std::string &username, const MessageTarget &target, const std::string &msg);
+    Message(const int &connectionId, const std::string &username, const MessageTarget &target, const std::string &ts, const std::string &msg);
 
     std::string serialize() const;
     static Message deserialize(const std::string &serialized);
@@ -35,7 +36,7 @@ public:
 
     friend bool operator==(const Message &lhs, const Message &rhs)
     {
-        return lhs.timestamp == rhs.timestamp && lhs.content == rhs.content;
+        return lhs.username == rhs.username && lhs.timestamp == rhs.timestamp && lhs.content == rhs.content;
     }
 
 private:

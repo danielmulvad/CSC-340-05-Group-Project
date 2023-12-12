@@ -12,8 +12,8 @@ protected:
 
     virtual void SetUp()
     {
-        broadcastRequest = new BroadcastRequestMessage(123, "Request Message");
-        broadcastResponse = new BroadcastResponseMessage(123, "Response Message");
+        broadcastRequest = new BroadcastRequestMessage(123, "", "Request Message");
+        broadcastResponse = new BroadcastResponseMessage(123, "", "Response Message");
     }
 
     virtual void TearDown()

@@ -9,14 +9,14 @@ Handlers::~Handlers()
 
 void Handlers::handleEstablishConnectionRequest(const int &connectionId, const Message &msg)
 {
-    EstablishConnectionResponseMessage response(connectionId);
+    EstablishConnectionResponseMessage response(connectionId, msg.username);
     messenger->sendMessageToClient(connectionId, response);
     return;
 }
 
 void Handlers::handleDropConnectionRequest(const int &connectionId, const Message &msg)
 {
-    DropConnectionResponseMessage response(connectionId);
+    DropConnectionResponseMessage response(connectionId, msg.username);
     messenger->sendMessageToClient(connectionId, response);
     return;
 }
@@ -36,7 +36,7 @@ void Handlers::handleRegisterRequest(const int &connectionId, const Message &msg
     if (parts.size() != expectedParts)
     {
         printf("Invalid serialized message format for %s\n", msg.serialize().c_str());
-        RegisterResponseMessage response(connectionId, RegisterResponseCode::REGISTER_FAILED);
+        RegisterResponseMessage response(connectionId, msg.username, RegisterResponseCode::REGISTER_FAILED);
         messenger->sendMessageToClient(connectionId, response);
         return;
     }
@@ -46,7 +46,7 @@ void Handlers::handleRegisterRequest(const int &connectionId, const Message &msg
     if (username.empty() || password.empty())
     {
         printf("Invalid username or password\n");
-        RegisterResponseMessage response(connectionId, RegisterResponseCode::REGISTER_FAILED);
+        RegisterResponseMessage response(connectionId, msg.username, RegisterResponseCode::REGISTER_FAILED);
         messenger->sendMessageToClient(connectionId, response);
         return;
     }
@@ -54,12 +54,12 @@ void Handlers::handleRegisterRequest(const int &connectionId, const Message &msg
     bool ok = this->database->add(username, password);
     if (!ok)
     {
-        RegisterResponseMessage response(connectionId, RegisterResponseCode::REGISTER_FAILED);
+        RegisterResponseMessage response(connectionId, username, RegisterResponseCode::REGISTER_FAILED);
         messenger->sendMessageToClient(connectionId, response);
         return;
     }
 
-    RegisterResponseMessage response(connectionId, RegisterResponseCode::REGISTER_SUCCESS);
+    RegisterResponseMessage response(connectionId, username, RegisterResponseCode::REGISTER_SUCCESS);
     messenger->sendMessageToClient(connectionId, response);
 }
 
@@ -79,7 +79,7 @@ void Handlers::handleLoginRequest(const int &connectionId, const Message &msg)
     if (parts.size() != expectedParts)
     {
         printf("Invalid serialized message format for %s\n", msg.serialize().c_str());
-        LoginResponseMessage response(connectionId, LoginResponseCode::LOGIN_FAILED);
+        LoginResponseMessage response(connectionId, msg.username, LoginResponseCode::LOGIN_FAILED);
         messenger->sendMessageToClient(connectionId, response);
         return;
     }
@@ -89,19 +89,19 @@ void Handlers::handleLoginRequest(const int &connectionId, const Message &msg)
     if (username.empty() || password.empty())
     {
         printf("Invalid username or password\n");
-        LoginResponseMessage response(connectionId, LoginResponseCode::LOGIN_FAILED);
+        LoginResponseMessage response(connectionId, msg.username, LoginResponseCode::LOGIN_FAILED);
         messenger->sendMessageToClient(connectionId, response);
         return;
     }
     bool ok = this->database->contains(username, password);
     if (!ok)
     {
-        LoginResponseMessage response(connectionId, LoginResponseCode::LOGIN_FAILED);
+        LoginResponseMessage response(connectionId, username, LoginResponseCode::LOGIN_FAILED);
         messenger->sendMessageToClient(connectionId, response);
         return;
     }
 
-    LoginResponseMessage response(connectionId, LoginResponseCode::LOGIN_SUCCESS);
+    LoginResponseMessage response(connectionId, username, LoginResponseCode::LOGIN_SUCCESS);
     messenger->sendMessageToClient(connectionId, response);
 }
 
@@ -112,7 +112,7 @@ void Handlers::handleBroadcastRequest(const int &connectionId, const Message &ms
 
     this->messenger->addMessage(msg);
 
-    BroadcastResponseMessage broadcastResponse(connectionId, content);
+    BroadcastResponseMessage broadcastResponse(connectionId, msg.username, content);
     messenger->broadcastMessage(connectionId, broadcastResponse);
 }
 

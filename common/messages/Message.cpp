@@ -1,13 +1,13 @@
 #include "./Message.h"
 
-Message::Message(const int &user_id, const MessageTarget &target, const std::string &msg) : user_id(user_id), target(target), content(msg), timestamp(getCurrentTimestamp()) {}
-Message::Message(const int &user_id, const MessageTarget &target, const std::string &ts, const std::string &msg) : user_id(user_id), target(target), content(msg), timestamp(ts) {}
+Message::Message(const int &connectionId, const std::string &username, const MessageTarget &target, const std::string &msg) : connectionId(connectionId), username(username), target(target), content(msg), timestamp(getCurrentTimestamp()) {}
+Message::Message(const int &connectionId, const std::string &username, const MessageTarget &target, const std::string &ts, const std::string &msg) : connectionId(connectionId), username(username), target(target), content(msg), timestamp(ts) {}
 
 std::string Message::serialize() const
 {
-    std::string user_id = std::to_string(this->user_id);
+    std::string connectionId = std::to_string(this->connectionId);
     std::string target = std::to_string(this->target);
-    return user_id + ";" + target + ";" + timestamp + ";" + content;
+    return connectionId + ";" + username + ";" + target + ";" + timestamp + ";" + content;
 }
 
 Message Message::deserialize(const std::string &serialized)
@@ -21,15 +21,16 @@ Message Message::deserialize(const std::string &serialized)
         parts.push_back(part);
     }
 
-    const size_t expectedParts = 4;
+    const size_t expectedParts = 5;
     if (parts.size() == expectedParts)
     {
-        int user_id = std::stoi(parts[0]);
-        MessageTarget message_target = static_cast<MessageTarget>(std::stoi(parts[1]));
-        std::string timestamp = parts[2];
-        std::string msg = parts[3];
+        int connectionId = std::stoi(parts[0]);
+        std::string username = parts[1];
+        MessageTarget message_target = static_cast<MessageTarget>(std::stoi(parts[2]));
+        std::string timestamp = parts[3];
+        std::string msg = parts[4];
 
-        return Message(user_id, message_target, timestamp, msg);
+        return Message(connectionId, username, message_target, timestamp, msg);
     }
     printf("Invalid serialized message format for %s\n", serialized.c_str());
     throw std::runtime_error("Invalid serialized message format");
@@ -37,8 +38,8 @@ Message Message::deserialize(const std::string &serialized)
 
 std::string Message::toString() const
 {
-    std::string user_id = std::to_string(this->user_id);
-    return "[" + timestamp + "] " + user_id + ": " + content;
+    std::string connectionId = std::to_string(this->connectionId);
+    return "[" + connectionId + "][" + this->timestamp + "] " + this->username + ": " + this->content;
 }
 
 std::string Message::getCurrentTimestamp()

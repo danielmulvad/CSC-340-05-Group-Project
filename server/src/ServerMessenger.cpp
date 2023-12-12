@@ -132,7 +132,7 @@ int ServerMessenger::stop()
 void ServerMessenger::addMessage(const Message &message)
 {
     std::string content = message.content.substr(strlen(SERVER_BROADCAST_RESPONSE_PREFIX.c_str()));
-    Message newMessage(message.user_id, MessageTarget::BROADCAST, message.timestamp, content);
+    Message newMessage(message.connectionId, message.username, MessageTarget::BROADCAST, message.timestamp, content);
     messages->add(newMessage);
 }
 

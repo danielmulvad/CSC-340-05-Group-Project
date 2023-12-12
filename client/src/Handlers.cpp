@@ -36,14 +36,14 @@ void Handlers::handleLogin()
 
 void Handlers::handleStop()
 {
-    DropConnectionRequestMessage dropConnectionRequestMessage(messenger->getConnectionId());
+    DropConnectionRequestMessage dropConnectionRequestMessage(messenger->getConnectionId(), username);
     messenger->sendMessageToServer(dropConnectionRequestMessage);
 }
 
 void Handlers::handleSearch(std::string &message)
 {
     std::string searchQuery = message.substr(strlen("/search") + 1);
-    SearchRequestMessage searchRequestMessage(messenger->getConnectionId(), searchQuery);
+    SearchRequestMessage searchRequestMessage(messenger->getConnectionId(), username, searchQuery);
     messenger->sendMessageToServer(searchRequestMessage);
 }
 
@@ -64,7 +64,7 @@ void Handlers::startMessaging()
             handleSearch(message);
             continue;
         }
-        BroadcastRequestMessage msg(messenger->getConnectionId(), message);
+        BroadcastRequestMessage msg(messenger->getConnectionId(), username, message);
         messenger->sendMessageToServer(msg);
     }
 }
@@ -119,6 +119,7 @@ void Handlers::loginHandler(const int &connectionId, const Message &msg)
     case LoginResponseCode::LOGIN_SUCCESS:
         printf("Login successful\n");
         messagingThread = std::thread(&Handlers::startMessaging, this);
+        this->username = msg.username;
         break;
     case LoginResponseCode::LOGIN_FAILED:
     default:
@@ -193,7 +194,7 @@ void Handlers::broadcastHandler(const int &connectionId, const Message &msg)
 
     std::string content = msg.content;
     content.erase(0, strlen(SERVER_BROADCAST_RESPONSE_PREFIX.c_str()) + 1);
-    Message broadcastMessage = Message(msg.user_id, MessageTarget::BROADCAST, msg.timestamp, content);
+    Message broadcastMessage = Message(msg.connectionId, msg.username, MessageTarget::BROADCAST, msg.timestamp, content);
 
     std::cout << broadcastMessage << std::endl;
 }
@@ -211,7 +212,7 @@ void Handlers::searchHandler(const int &connectionId, const Message &msg)
 
     std::string content = msg.content;
     content.erase(0, strlen(SERVER_SEARCH_RESPONSE_PREFIX.c_str()) + 1);
-    Message searchMessage = Message(msg.user_id, MessageTarget::BROADCAST, msg.timestamp, content);
+    Message searchMessage = Message(msg.connectionId, username, MessageTarget::BROADCAST, msg.timestamp, content);
 
     std::cout << searchMessage << std::endl;
 }

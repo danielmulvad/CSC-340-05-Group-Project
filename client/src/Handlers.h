@@ -10,6 +10,7 @@ class Handlers
 private:
     ClientMessenger *messenger;
     std::thread messagingThread;
+    std::string username;
 
 public:
     Handlers(ClientMessenger *messenger);
