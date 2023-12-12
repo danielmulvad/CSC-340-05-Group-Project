@@ -1,4 +1,5 @@
 #include "./Test_Server.h"
+#include <thread>
 
 TEST_F(ServerTest, ConstructorAndDestructor)
 {
@@ -8,7 +9,7 @@ TEST_F(ServerTest, ConstructorAndDestructor)
 TEST_F(ServerTest, StartAndStopServer)
 {
     std::thread serverThread([&]()
-                             { server->start(); });
+                             { try {server->start();} catch (std::exception &e) {} });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

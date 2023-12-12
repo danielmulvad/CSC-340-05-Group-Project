@@ -1,64 +1,8 @@
 #include "../../common/messages/Broadcast.h"
 #include "./ServerMessenger.h"
-
-void ServerMessenger::setupConnection()
-{
-    struct sockaddr_in address;
-    int opt = 1;
-
-    server_fd = createSocket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd < 0)
-    {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
-    }
-
-    if (setSocketOptions(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
-    {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(port);
-
-    if (bindSocket(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-    {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-
-    if (listenSocket(server_fd, 3) < 0)
-    {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void ServerMessenger::handleClient(int clientSocket)
-{
-    connectedClients->add(clientSocket);
-
-    while (running)
-    {
-        char buffer[1024] = {0};
-        ssize_t valread = read(clientSocket, buffer, sizeof(buffer) - 1);
-        if (valread <= 0)
-        {
-            if (valread < 0)
-                perror("read");
-            break;
-        }
-
-        buffer[valread] = '\0';
-        Message receivedMsg = Message::deserialize(std::string(buffer));
-        processReceivedMessage(clientSocket, receivedMsg);
-    }
-
-    close(clientSocket);
-    connectedClients->remove(clientSocket);
-}
+#include <arpa/inet.h>
+#include <iostream>
+#include <thread>
 
 ServerMessenger::ServerMessenger(unsigned int port)
     : BaseMessenger(), port(port), connectedClients(new LinkedList<int>()), messages(new LinkedList<Message>())
@@ -79,6 +23,53 @@ ServerMessenger::~ServerMessenger()
     delete messages;
 }
 
+void ServerMessenger::setupConnection()
+{
+    struct sockaddr_in address;
+    int opt = 1;
+
+    server_fd = createSocket(AF_INET, SOCK_STREAM, 0);
+
+    setSocketOptions(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+
+    bindSocket(server_fd, (struct sockaddr *)&address, sizeof(address));
+
+    listenSocket(server_fd, 3);
+}
+
+void ServerMessenger::handleClient(int clientSocket)
+{
+    connectedClients->add(clientSocket);
+
+    while (running)
+    {
+        try
+        {
+            char buffer[1024] = {0};
+            ssize_t valread = readSocket(clientSocket, buffer, sizeof(buffer) - 1);
+            if (valread <= 0)
+            {
+                break; // Client disconnected
+            }
+
+            buffer[valread] = '\0';
+            Message receivedMsg = Message::deserialize(std::string(buffer));
+            processReceivedMessage(clientSocket, receivedMsg);
+        }
+        catch (std::exception &e)
+        {
+            std::cout << "Error in handleClient: " << e.what() << std::endl;
+        }
+    }
+
+    closeSocket(clientSocket);
+    connectedClients->remove(clientSocket);
+}
+
 void ServerMessenger::broadcastMessage(int senderId, const Message &message)
 {
     Node<int> *current = connectedClients->getHead();
@@ -95,7 +86,7 @@ void ServerMessenger::broadcastMessage(int senderId, const Message &message)
 int ServerMessenger::sendMessageToClient(const int &clientSocket, const Message &message)
 {
     std::cout << "Sending message: " << message << std::endl;
-    return sendMessage(clientSocket, message);
+    return sendSocket(clientSocket, message.serialize().c_str(), message.serialize().length(), 0);
 }
 
 int ServerMessenger::start()

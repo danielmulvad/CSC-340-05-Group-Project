@@ -2,17 +2,19 @@
 #define _CLIENTMESSENGER_H_
 
 #include "../../common/BaseMessenger.h"
+#include "../../common/Socket.h"
 #include <arpa/inet.h>
+#include <thread>
 
-class ClientMessenger : public BaseMessenger
+class ClientMessenger : public BaseMessenger, public Socket
 {
 private:
     std::string serverAddress;
     unsigned int port;
     std::condition_variable exitConditionVariable;
     std::thread listenerThread;
-    int socketId = 0;
-    int connectionId = 0;
+    int socket_fd = -1;
+    int connectionId = -1;
 
     void setupConnection() override;
     void listenForMessages();

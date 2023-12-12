@@ -212,7 +212,7 @@ void Handlers::searchHandler(const int &connectionId, const Message &msg)
 
     std::string content = msg.content;
     content.erase(0, strlen(SERVER_SEARCH_RESPONSE_PREFIX.c_str()) + 1);
-    Message searchMessage = Message(msg.connectionId, username, MessageTarget::BROADCAST, msg.timestamp, content);
+    Message searchMessage = Message(msg.connectionId, msg.username, MessageTarget::BROADCAST, msg.timestamp, content);
 
     std::cout << searchMessage << std::endl;
 }
