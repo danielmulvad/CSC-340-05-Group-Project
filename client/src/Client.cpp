@@ -6,18 +6,38 @@
 #include "../../common/messages/Search.h"
 #include "./Client.h"
 
+/**
+ * Default constructor for Client.
+ * Initializes the Client with a default port value.
+ */
 Client::Client() : Client(8080) {}
 
+/**
+ * Constructor for Client with a specified port.
+ * Initializes the Client with the provided port and sets up the messenger and handlers.
+ *
+ * @param port The port number to be used for the messenger.
+ */
 Client::Client(unsigned int port) : messenger(new ClientMessenger("0.0.0.0", port))
 {
     handlers = new Handlers(this->messenger);
 }
 
+/**
+ * Destructor for Client.
+ * Cleans up resources, specifically deletes the handlers instance.
+ */
 Client::~Client()
 {
     delete this->handlers;
 }
 
+/**
+ * Starts the client.
+ * Registers all necessary message handlers and starts the messenger.
+ *
+ * @return The result of the messenger's start operation.
+ */
 int Client::start()
 {
     // Establish Connection
@@ -53,6 +73,12 @@ int Client::start()
     return this->messenger->start();
 }
 
+/**
+ * Stops the client.
+ * Stops the messenger and performs any necessary cleanup.
+ *
+ * @return The result of the messenger's stop operation.
+ */
 int Client::stop()
 {
 

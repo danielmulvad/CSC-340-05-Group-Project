@@ -1,17 +1,31 @@
 #include "../../common/messages/EstablishConnection.h"
 #include "./ClientMessenger.h"
 
+/**
+ * Constructor for ClientMessenger.
+ * Initializes the messenger with the server's address and port.
+ *
+ * @param serverAddress The IP address of the server.
+ * @param port The port number on which the server is listening.
+ */
 ClientMessenger::ClientMessenger(const std::string &serverAddress, unsigned int port)
-    : BaseMessenger(), socket(new Socket()), connectionId(-1), socket_fd(-1), serverAddress(serverAddress), port(port)
-{
-}
+    : BaseMessenger(), socket(new Socket()), connectionId(-1), socket_fd(-1), serverAddress(serverAddress), port(port) {}
 
+/**
+ * Destructor for ClientMessenger.
+ * Stops the messenger and cleans up resources, specifically deletes the socket instance.
+ */
 ClientMessenger::~ClientMessenger()
 {
     stop();
     delete socket;
 }
 
+/**
+ * Sets up the connection to the server.
+ * Initializes the socket and connects to the server at the specified address and port.
+ * @throws std::runtime_error If socket creation or connection fails.
+ */
 void ClientMessenger::setupConnection()
 {
     struct sockaddr_in serv_addr;
@@ -36,6 +50,10 @@ void ClientMessenger::setupConnection()
     }
 }
 
+/**
+ * Listens for messages from the server.
+ * Continuously reads messages from the socket and processes them until the messenger is stopped.
+ */
 void ClientMessenger::listenForMessages()
 {
     char buffer[1024];
@@ -51,6 +69,12 @@ void ClientMessenger::listenForMessages()
     }
 }
 
+/**
+ * Starts the messenger.
+ * Sets up the connection, starts the message listener thread, and sends an establish connection message to the server.
+ *
+ * @return EXIT_SUCCESS on successful start.
+ */
 int ClientMessenger::start()
 {
     setupConnection();
@@ -67,6 +91,12 @@ int ClientMessenger::start()
     return EXIT_SUCCESS;
 }
 
+/**
+ * Stops the messenger.
+ * Stops the message listener thread, closes the socket, and notifies the exit condition variable.
+ *
+ * @return EXIT_SUCCESS on successful stop.
+ */
 int ClientMessenger::stop()
 {
     if (running)
@@ -88,22 +118,45 @@ int ClientMessenger::stop()
     return EXIT_SUCCESS;
 }
 
+/**
+ * Sends a message to the server.
+ * Serializes the given message and sends it over the socket.
+ *
+ * @param msg The message to be sent to the server.
+ */
 void ClientMessenger::sendMessageToServer(const Message &msg)
 {
     std::string serializedMsg = msg.serialize();
     socket->sendSocket(this->socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
 }
 
+/**
+ * Registers a message handler.
+ * Associates a handler function with a specific message pattern.
+ *
+ * @param pattern The pattern to associate with the handler.
+ * @param handler The MessageHandler function to be called for the associated pattern.
+ */
 void ClientMessenger::registerHandler(const std::string &pattern, MessageHandler handler)
 {
     BaseMessenger::registerHandler(pattern, std::move(handler));
 }
 
+/**
+ * Gets the connection ID of the messenger.
+ *
+ * @return The current connection ID.
+ */
 int ClientMessenger::getConnectionId()
 {
     return connectionId;
 }
 
+/**
+ * Sets the connection ID of the messenger.
+ *
+ * @param connectionId The new connection ID to be set.
+ */
 void ClientMessenger::setConnectionId(const int &connectionId)
 {
     this->connectionId = connectionId;

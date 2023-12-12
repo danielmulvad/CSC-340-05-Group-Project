@@ -4,6 +4,13 @@
 #include <iostream>
 #include <thread>
 
+/**
+ * Constructor for ServerMessenger.
+ * Initializes the server messenger with a specific port and sets up the necessary structures.
+ *
+ * @param port The port number on which the server will listen.
+ * @throws std::invalid_argument If the port number is not within the valid range.
+ */
 ServerMessenger::ServerMessenger(const unsigned int &port)
     : BaseMessenger(), connectedClients(new LinkedList<int>()), messages(new LinkedList<Message>()), socket(new Socket()), port(port), server_fd(-1)
 {
@@ -17,6 +24,10 @@ ServerMessenger::ServerMessenger(const unsigned int &port)
     }
 }
 
+/**
+ * Destructor for ServerMessenger.
+ * Cleans up resources, specifically deletes the connected clients, messages, and socket instances.
+ */
 ServerMessenger::~ServerMessenger()
 {
     delete connectedClients;
@@ -24,6 +35,10 @@ ServerMessenger::~ServerMessenger()
     delete socket;
 }
 
+/**
+ * Sets up the server connection.
+ * Initializes the socket, binds it to the specified port, and listens for incoming connections.
+ */
 void ServerMessenger::setupConnection()
 {
     struct sockaddr_in address;
@@ -42,6 +57,12 @@ void ServerMessenger::setupConnection()
     socket->listenSocket(server_fd, 3);
 }
 
+/**
+ * Handles client connections.
+ * Manages the communication with a connected client, reading messages, and processing them.
+ *
+ * @param clientSocket The socket file descriptor for the connected client.
+ */
 void ServerMessenger::handleClient(int clientSocket)
 {
     connectedClients->add(clientSocket);
@@ -71,6 +92,12 @@ void ServerMessenger::handleClient(int clientSocket)
     connectedClients->remove(clientSocket);
 }
 
+/**
+ * Broadcasts a message to all connected clients except the sender.
+ *
+ * @param senderId The ID of the sender client.
+ * @param message The message to be broadcast.
+ */
 void ServerMessenger::broadcastMessage(int senderId, const Message &message)
 {
     Node<int> *current = connectedClients->getHead();
@@ -84,12 +111,25 @@ void ServerMessenger::broadcastMessage(int senderId, const Message &message)
     }
 }
 
+/**
+ * Sends a message to a specific client.
+ *
+ * @param clientSocket The socket file descriptor of the receiving client.
+ * @param message The message to be sent.
+ * @return An integer status code of the send operation.
+ */
 int ServerMessenger::sendMessageToClient(const int &clientSocket, const Message &message)
 {
     std::cout << "Sending message: " << message << std::endl;
     return socket->sendSocket(clientSocket, message.serialize().c_str(), message.serialize().length(), 0);
 }
 
+/**
+ * Starts the server messenger.
+ * Sets up the connection and starts listening for client connections.
+ *
+ * @return EXIT_SUCCESS on successful start.
+ */
 int ServerMessenger::start()
 {
     setupConnection();
@@ -114,6 +154,12 @@ int ServerMessenger::start()
     return EXIT_SUCCESS;
 }
 
+/**
+ * Stops the server messenger.
+ * Stops accepting new connections and closes the server socket.
+ *
+ * @return EXIT_SUCCESS on successful stop.
+ */
 int ServerMessenger::stop()
 {
     running = false;
@@ -121,6 +167,11 @@ int ServerMessenger::stop()
     return EXIT_SUCCESS;
 };
 
+/**
+ * Adds a message to the server's message list.
+ *
+ * @param message The message to be added.
+ */
 void ServerMessenger::addMessage(const Message &message)
 {
     std::string content = message.content.substr(strlen(SERVER_BROADCAST_RESPONSE_PREFIX.c_str()));
@@ -128,6 +179,12 @@ void ServerMessenger::addMessage(const Message &message)
     messages->add(newMessage);
 }
 
+/**
+ * Retrieves messages that contain a specific substring.
+ *
+ * @param message The substring to search for within the messages.
+ * @return A vector of Messages that contain the specified substring.
+ */
 std::vector<Message> ServerMessenger::getMessages(const std::string &message)
 {
     std::vector<Message> result;

@@ -1,13 +1,32 @@
 #include "./Handlers.h"
 #include <thread>
 
+/**
+ * Constructor for Handlers.
+ * Initializes Handlers with references to the database and the server messenger.
+ *
+ * @param database Pointer to the database used for user and message management.
+ * @param messenger Pointer to the server messenger for communication with clients.
+ */
 Handlers::Handlers(Database *database, ServerMessenger *messenger) : database(database), messenger(messenger) {}
+
+/**
+ * Destructor for Handlers.
+ * Cleans up resources by deleting the database and messenger instances.
+ */
 Handlers::~Handlers()
 {
     delete database;
     delete messenger;
 }
 
+/**
+ * Handles the establish connection request from a client.
+ * Sends an establish connection response back to the client.
+ *
+ * @param connectionId The ID of the client connection.
+ * @param msg The received message.
+ */
 void Handlers::handleEstablishConnectionRequest(const int &connectionId, const Message &msg)
 {
     EstablishConnectionResponseMessage response(connectionId, msg.username);
@@ -15,6 +34,13 @@ void Handlers::handleEstablishConnectionRequest(const int &connectionId, const M
     return;
 }
 
+/**
+ * Handles the drop connection request from a client.
+ * Sends a drop connection response back to the client.
+ *
+ * @param connectionId The ID of the client connection.
+ * @param msg The received message.
+ */
 void Handlers::handleDropConnectionRequest(const int &connectionId, const Message &msg)
 {
     DropConnectionResponseMessage response(connectionId, msg.username);
@@ -22,6 +48,13 @@ void Handlers::handleDropConnectionRequest(const int &connectionId, const Messag
     return;
 }
 
+/**
+ * Handles the register request from a client.
+ * Processes the registration details and sends a register response to the client.
+ *
+ * @param connectionId The ID of the client connection.
+ * @param msg The received message containing registration details.
+ */
 void Handlers::handleRegisterRequest(const int &connectionId, const Message &msg)
 {
     std::vector<std::string> parts;
@@ -64,6 +97,13 @@ void Handlers::handleRegisterRequest(const int &connectionId, const Message &msg
     messenger->sendMessageToClient(connectionId, response);
 }
 
+/**
+ * Handles the login request from a client.
+ * Verifies login credentials and sends a login response to the client.
+ *
+ * @param connectionId The ID of the client connection.
+ * @param msg The received message containing login details.
+ */
 void Handlers::handleLoginRequest(const int &connectionId, const Message &msg)
 {
 
@@ -106,6 +146,13 @@ void Handlers::handleLoginRequest(const int &connectionId, const Message &msg)
     messenger->sendMessageToClient(connectionId, response);
 }
 
+/**
+ * Handles the broadcast request from a client.
+ * Adds the message to the server's message list and broadcasts it to other clients.
+ *
+ * @param connectionId The ID of the client connection.
+ * @param msg The message to be broadcast.
+ */
 void Handlers::handleBroadcastRequest(const int &connectionId, const Message &msg)
 {
     std::string content = msg.content;
@@ -117,6 +164,13 @@ void Handlers::handleBroadcastRequest(const int &connectionId, const Message &ms
     messenger->broadcastMessage(connectionId, broadcastResponse);
 }
 
+/**
+ * Handles the search request from a client.
+ * Searches for messages containing the specified content and sends them back to the client.
+ *
+ * @param connectionId The ID of the client connection.
+ * @param msg The message containing the search query.
+ */
 void Handlers::handleSearchRequest(const int &connectionId, const Message &msg)
 {
     std::string content = msg.content;

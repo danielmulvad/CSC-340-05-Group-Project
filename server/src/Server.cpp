@@ -6,18 +6,39 @@
 #include "../../common/messages/Search.h"
 #include "./Server.h"
 
+/**
+ * Default constructor for Server.
+ * Initializes the Server with a default port value.
+ */
 Server::Server() : Server(8080) {}
-Server::Server(unsigned int port) : database(new Database()), messenger(new ServerMessenger(port))
+
+/**
+ * Constructor for Server with a specified port.
+ * Initializes the Server with the provided port, sets up the database and the messenger, and initializes handlers.
+ *
+ * @param port The port number to be used for the server messenger.
+ */
+Server::Server(const unsigned int &port) : database(new Database()), messenger(new ServerMessenger(port))
 {
     this->handlers = new Handlers(this->database, this->messenger);
 }
 
+/**
+ * Destructor for Server.
+ * Cleans up resources, specifically deletes the database and messenger instances.
+ */
 Server::~Server()
 {
     delete this->database;
     delete this->messenger;
 }
 
+/**
+ * Starts the server.
+ * Registers all necessary message handlers and starts the messenger.
+ *
+ * @return The result of the messenger's start operation.
+ */
 int Server::start()
 {
     // Establish connection
@@ -53,6 +74,12 @@ int Server::start()
     return this->messenger->start();
 }
 
+/**
+ * Stops the server.
+ * Stops the messenger and performs any necessary cleanup.
+ *
+ * @return The result of the messenger's stop operation.
+ */
 int Server::stop()
 {
     return this->messenger->stop();

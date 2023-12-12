@@ -16,7 +16,7 @@ private:
 
 public:
     Server();
-    Server(unsigned int port);
+    Server(const unsigned int &port);
     ~Server();
 
     int start();

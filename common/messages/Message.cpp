@@ -1,8 +1,31 @@
 #include "./Message.h"
 
+/**
+ * Constructs a new Message with the current timestamp.
+ *
+ * @param connectionId The ID of the connection from which the message originates.
+ * @param username The username of the message sender.
+ * @param target The target audience of the message.
+ * @param msg The message content.
+ */
 Message::Message(const int &connectionId, const std::string &username, const MessageTarget &target, const std::string &msg) : connectionId(connectionId), username(username), target(target), content(msg), timestamp(getCurrentTimestamp()) {}
+
+/**
+ * Constructs a new Message with a specified timestamp.
+ *
+ * @param connectionId The ID of the connection from which the message originates.
+ * @param username The username of the message sender.
+ * @param target The target audience of the message.
+ * @param ts The timestamp of the message.
+ * @param msg The message content.
+ */
 Message::Message(const int &connectionId, const std::string &username, const MessageTarget &target, const std::string &ts, const std::string &msg) : connectionId(connectionId), username(username), target(target), content(msg), timestamp(ts) {}
 
+/**
+ * Serializes the message into a string format.
+ *
+ * @return A string representing the serialized form of the message.
+ */
 std::string Message::serialize() const
 {
     std::string connectionId = std::to_string(this->connectionId);
@@ -10,6 +33,13 @@ std::string Message::serialize() const
     return connectionId + ";" + username + ";" + target + ";" + timestamp + ";" + content;
 }
 
+/**
+ * Deserializes a string into a Message object.
+ *
+ * @param serialized The string to be deserialized into a Message.
+ * @return A Message object derived from the serialized string.
+ * @throws std::runtime_error If the serialized string format is invalid.
+ */
 Message Message::deserialize(const std::string &serialized)
 {
     std::vector<std::string> parts;
@@ -36,12 +66,22 @@ Message Message::deserialize(const std::string &serialized)
     throw std::runtime_error("Invalid serialized message format");
 }
 
+/**
+ * Returns a string representation of the Message.
+ *
+ * @return A string that represents the message in a human-readable format.
+ */
 std::string Message::toString() const
 {
     std::string connectionId = std::to_string(this->connectionId);
     return "[" + connectionId + "][" + this->timestamp + "] " + this->username + ": " + this->content;
 }
 
+/**
+ * Gets the current timestamp in a human-readable format.
+ *
+ * @return A string representing the current timestamp in the format "YYYY-MM-DD HH:MM:SS".
+ */
 std::string Message::getCurrentTimestamp()
 {
     auto now = std::chrono::system_clock::now();

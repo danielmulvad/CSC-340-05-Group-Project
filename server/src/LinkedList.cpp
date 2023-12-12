@@ -2,12 +2,28 @@
 #include "./LinkedList.h"
 #include <iostream>
 
+/**
+ * Default constructor for LinkedList.
+ * Initializes an empty LinkedList.
+ */
 template <typename V>
 LinkedList<V>::LinkedList() : LinkedList(nullptr, nullptr, 0) {}
 
+/**
+ * Constructor for LinkedList with specified head, tail, and size.
+ * Initializes the LinkedList with the provided head, tail, and size.
+ *
+ * @param head Pointer to the first node of the list.
+ * @param tail Pointer to the last node of the list.
+ * @param size The size of the list.
+ */
 template <typename V>
 LinkedList<V>::LinkedList(Node<V> *head, Node<V> *tail, int size) : head(head), tail(tail), size(size) {}
 
+/**
+ * Destructor for LinkedList.
+ * Deletes all nodes in the list to free up memory.
+ */
 template <typename V>
 LinkedList<V>::~LinkedList()
 {
@@ -20,18 +36,43 @@ LinkedList<V>::~LinkedList()
     }
 }
 
+/**
+ * Gets the head node of the list.
+ *
+ * @return Pointer to the first node of the list.
+ */
 template <typename V>
 Node<V> *LinkedList<V>::getHead() const { return head; }
 
+/**
+ * Sets the head node of the list.
+ *
+ * @param head Pointer to the new first node of the list.
+ */
 template <typename V>
 void LinkedList<V>::setHead(Node<V> *head) { this->head = head; }
 
+/**
+ * Gets the tail node of the list.
+ *
+ * @return Pointer to the last node of the list.
+ */
 template <typename V>
 Node<V> *LinkedList<V>::getTail() const { return tail; }
 
+/**
+ * Sets the tail node of the list.
+ *
+ * @param tail Pointer to the new last node of the list.
+ */
 template <typename V>
 void LinkedList<V>::setTail(Node<V> *tail) { this->tail = tail; }
 
+/**
+ * Adds a new value to the end of the list.
+ *
+ * @param value The value to add to the list.
+ */
 template <typename V>
 void LinkedList<V>::add(V value)
 {
@@ -49,6 +90,12 @@ void LinkedList<V>::add(V value)
     size++;
 }
 
+/**
+ * Retrieves a value from the list.
+ *
+ * @param value The value to search for in the list.
+ * @return The value if found, otherwise returns a default-constructed value.
+ */
 template <typename V>
 V LinkedList<V>::get(V value)
 {
@@ -64,6 +111,11 @@ V LinkedList<V>::get(V value)
     return current->getValue();
 }
 
+/**
+ * Removes a value from the list.
+ *
+ * @param value The value to remove from the list.
+ */
 template <typename V>
 void LinkedList<V>::remove(V value)
 {
@@ -101,6 +153,9 @@ void LinkedList<V>::remove(V value)
     }
 }
 
+/**
+ * Prints the values in the list to the standard output.
+ */
 template <typename V>
 void LinkedList<V>::print()
 {
@@ -112,5 +167,6 @@ void LinkedList<V>::print()
     }
 }
 
+// Explicit template instantiation
 template class LinkedList<int>;
 template class LinkedList<Message>;

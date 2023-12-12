@@ -6,12 +6,27 @@
 #include "../../common/messages/Search.h"
 #include "./Handlers.h"
 
+/**
+ * Constructor for Handlers.
+ * Initializes Handlers with a reference to a ClientMessenger.
+ *
+ * @param messenger A pointer to a ClientMessenger instance used for communication.
+ */
 Handlers::Handlers(ClientMessenger *messenger) : messenger(messenger) {}
+
+/**
+ * Destructor for Handlers.
+ * Cleans up resources, specifically deletes the messenger instance.
+ */
 Handlers::~Handlers()
 {
     delete messenger;
 }
 
+/**
+ * Handles the registration process.
+ * Prompts the user for username and password, then sends a register request to the server.
+ */
 void Handlers::handleRegister()
 {
     std::string username, password;
@@ -23,6 +38,10 @@ void Handlers::handleRegister()
     messenger->sendMessageToServer(loginMessage);
 }
 
+/**
+ * Handles the login process.
+ * Prompts the user for username and password, then sends a login request to the server.
+ */
 void Handlers::handleLogin()
 {
     std::string username, password;
@@ -34,12 +53,22 @@ void Handlers::handleLogin()
     messenger->sendMessageToServer(loginMessage);
 }
 
+/**
+ * Handles the stop command.
+ * Sends a message to the server to drop the connection.
+ */
 void Handlers::handleStop()
 {
     DropConnectionRequestMessage dropConnectionRequestMessage(messenger->getConnectionId(), username);
     messenger->sendMessageToServer(dropConnectionRequestMessage);
 }
 
+/**
+ * Handles a search command.
+ * Extracts the search query from the message and sends a search request to the server.
+ *
+ * @param message The complete search command message.
+ */
 void Handlers::handleSearch(std::string &message)
 {
     std::string searchQuery = message.substr(strlen("/search") + 1);
@@ -47,6 +76,10 @@ void Handlers::handleSearch(std::string &message)
     messenger->sendMessageToServer(searchRequestMessage);
 }
 
+/**
+ * Starts the messaging loop.
+ * Continuously reads messages from the console and sends them to the server until '/exit' is entered.
+ */
 void Handlers::startMessaging()
 {
     printf("Enter message (type '/exit' to quit):\n");
@@ -69,6 +102,10 @@ void Handlers::startMessaging()
     }
 }
 
+/**
+ * Displays and handles the main menu options.
+ * Provides options for login, registration, and quitting the application.
+ */
 void Handlers::handleMainMenu()
 {
     int option;
@@ -95,6 +132,13 @@ void Handlers::handleMainMenu()
     }
 }
 
+/**
+ * Handler for login responses.
+ * Processes the response from the server for a login request and updates the application state accordingly.
+ *
+ * @param connectionId The ID of the connection.
+ * @param msg The received message containing the login response.
+ */
 void Handlers::loginHandler(const int &connectionId, const Message &msg)
 {
     std::vector<std::string> parts;
@@ -129,6 +173,13 @@ void Handlers::loginHandler(const int &connectionId, const Message &msg)
     }
 }
 
+/**
+ * Handler for registration responses.
+ * Processes the response from the server for a registration request.
+ *
+ * @param connectionId The ID of the connection.
+ * @param msg The received message containing the registration response.
+ */
 void Handlers::registerHandler(const int &connectionId, const Message &msg)
 {
     std::vector<std::string> parts;
@@ -161,6 +212,13 @@ void Handlers::registerHandler(const int &connectionId, const Message &msg)
     handleMainMenu();
 }
 
+/**
+ * Handler for establishing connection responses.
+ * Processes the response from the server for an establish connection request.
+ *
+ * @param connectionId The ID of the connection.
+ * @param msg The received message containing the new connection ID.
+ */
 void Handlers::establishConnectionHandler(const int &connectionId, const Message &msg)
 {
     std::string content = msg.content;
@@ -172,6 +230,13 @@ void Handlers::establishConnectionHandler(const int &connectionId, const Message
     handleMainMenu();
 }
 
+/**
+ * Handler for dropping connection responses.
+ * Performs necessary cleanup when a connection is dropped.
+ *
+ * @param connectionId The ID of the connection.
+ * @param msg The received message indicating the connection has been dropped.
+ */
 void Handlers::dropConnectionHandler(const int &connectionId, const Message &msg)
 {
     if (messagingThread.joinable() && std::this_thread::get_id() != messagingThread.get_id())
@@ -181,6 +246,13 @@ void Handlers::dropConnectionHandler(const int &connectionId, const Message &msg
     messenger->stop();
 }
 
+/**
+ * Handler for broadcast messages.
+ * Processes and displays broadcast messages received from the server.
+ *
+ * @param connectionId The ID of the connection.
+ * @param msg The broadcast message to be displayed.
+ */
 void Handlers::broadcastHandler(const int &connectionId, const Message &msg)
 {
     std::vector<std::string> parts;
@@ -199,6 +271,13 @@ void Handlers::broadcastHandler(const int &connectionId, const Message &msg)
     std::cout << broadcastMessage << std::endl;
 }
 
+/**
+ * Handler for search results.
+ * Processes and displays search results received from the server.
+ *
+ * @param connectionId The ID of the connection.
+ * @param msg The search result message to be displayed.
+ */
 void Handlers::searchHandler(const int &connectionId, const Message &msg)
 {
     std::vector<std::string> parts;
