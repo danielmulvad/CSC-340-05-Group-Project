@@ -6,20 +6,21 @@
 #include "../../common/messages/Message.h"
 #include "./LinkedList.h"
 
-class ServerMessenger : public BaseMessenger, public Socket
+class ServerMessenger : public BaseMessenger
 {
 private:
-    const unsigned int port;
-    int server_fd;
     LinkedList<int> *connectedClients;
     LinkedList<Message> *messages;
-    MessageRouter router;
+    Socket *socket;
+
+    const unsigned int port;
+    int server_fd;
 
     void handleClient(int clientSocket);
     void setupConnection() override;
 
 public:
-    ServerMessenger(unsigned int port);
+    ServerMessenger(const unsigned int &port);
     virtual ~ServerMessenger();
 
     int sendMessageToClient(const int &clientSocket, const Message &message);

@@ -2,19 +2,20 @@
 #include "./ClientMessenger.h"
 
 ClientMessenger::ClientMessenger(const std::string &serverAddress, unsigned int port)
-    : BaseMessenger(), serverAddress(serverAddress), port(port)
+    : BaseMessenger(), socket(new Socket()), connectionId(-1), socket_fd(-1), serverAddress(serverAddress), port(port)
 {
 }
 
 ClientMessenger::~ClientMessenger()
 {
     stop();
+    delete socket;
 }
 
 void ClientMessenger::setupConnection()
 {
     struct sockaddr_in serv_addr;
-    this->socket_fd = createSocket(AF_INET, SOCK_STREAM, 0);
+    this->socket_fd = socket->createSocket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_fd < 0)
     {
         throw std::runtime_error("Socket creation failed");
@@ -28,7 +29,7 @@ void ClientMessenger::setupConnection()
         throw std::runtime_error("Invalid address or address not supported");
     }
 
-    int socketId = connectSocket(this->socket_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+    int socketId = socket->connectSocket(this->socket_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
     if (socketId < 0)
     {
         throw std::runtime_error("Connection Failed");
@@ -40,7 +41,7 @@ void ClientMessenger::listenForMessages()
     char buffer[1024];
     while (running)
     {
-        ssize_t valread = readSocket(this->socket_fd, buffer, sizeof(buffer) - 1);
+        ssize_t valread = socket->readSocket(this->socket_fd, buffer, sizeof(buffer) - 1);
         if (valread > 0)
         {
             buffer[valread] = '\0';
@@ -79,7 +80,7 @@ int ClientMessenger::stop()
 
         if (this->socket_fd > 0)
         {
-            closeSocket(this->socket_fd);
+            socket->closeSocket(this->socket_fd);
         }
     }
 
@@ -90,7 +91,7 @@ int ClientMessenger::stop()
 void ClientMessenger::sendMessageToServer(const Message &msg)
 {
     std::string serializedMsg = msg.serialize();
-    sendSocket(this->socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
+    socket->sendSocket(this->socket_fd, serializedMsg.c_str(), serializedMsg.length(), 0);
 }
 
 void ClientMessenger::registerHandler(const std::string &pattern, MessageHandler handler)

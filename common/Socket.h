@@ -7,7 +7,10 @@
 
 class Socket
 {
-protected:
+public:
+    Socket() = default;
+    virtual ~Socket() = default;
+
     virtual int acceptSocket(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
     virtual int bindSocket(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
     virtual int closeSocket(int sockfd);
@@ -17,10 +20,6 @@ protected:
     virtual int sendSocket(int sockfd, const void *buf, size_t len, int flags);
     virtual int setSocketOptions(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
     virtual ssize_t readSocket(int sockfd, void *buf, size_t count);
-
-public:
-    Socket() = default;
-    virtual ~Socket() = default;
 };
 
 #endif // SOCKET_H

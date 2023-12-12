@@ -6,15 +6,17 @@
 #include <arpa/inet.h>
 #include <thread>
 
-class ClientMessenger : public BaseMessenger, public Socket
+class ClientMessenger : public BaseMessenger
 {
 private:
-    std::string serverAddress;
-    unsigned int port;
+    Socket *socket;
+
+    int connectionId;
+    int socket_fd;
     std::condition_variable exitConditionVariable;
+    std::string serverAddress;
     std::thread listenerThread;
-    int socket_fd = -1;
-    int connectionId = -1;
+    unsigned int port;
 
     void setupConnection() override;
     void listenForMessages();

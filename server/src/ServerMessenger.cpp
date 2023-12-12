@@ -4,8 +4,8 @@
 #include <iostream>
 #include <thread>
 
-ServerMessenger::ServerMessenger(unsigned int port)
-    : BaseMessenger(), port(port), connectedClients(new LinkedList<int>()), messages(new LinkedList<Message>())
+ServerMessenger::ServerMessenger(const unsigned int &port)
+    : BaseMessenger(), connectedClients(new LinkedList<int>()), messages(new LinkedList<Message>()), socket(new Socket()), port(port), server_fd(-1)
 {
     if (port > 65535)
     {
@@ -21,6 +21,7 @@ ServerMessenger::~ServerMessenger()
 {
     delete connectedClients;
     delete messages;
+    delete socket;
 }
 
 void ServerMessenger::setupConnection()
@@ -28,17 +29,17 @@ void ServerMessenger::setupConnection()
     struct sockaddr_in address;
     int opt = 1;
 
-    server_fd = createSocket(AF_INET, SOCK_STREAM, 0);
+    server_fd = socket->createSocket(AF_INET, SOCK_STREAM, 0);
 
-    setSocketOptions(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    socket->setSocketOptions(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
 
-    bindSocket(server_fd, (struct sockaddr *)&address, sizeof(address));
+    socket->bindSocket(server_fd, (struct sockaddr *)&address, sizeof(address));
 
-    listenSocket(server_fd, 3);
+    socket->listenSocket(server_fd, 3);
 }
 
 void ServerMessenger::handleClient(int clientSocket)
@@ -50,7 +51,7 @@ void ServerMessenger::handleClient(int clientSocket)
         try
         {
             char buffer[1024] = {0};
-            ssize_t valread = readSocket(clientSocket, buffer, sizeof(buffer) - 1);
+            ssize_t valread = socket->readSocket(clientSocket, buffer, sizeof(buffer) - 1);
             if (valread <= 0)
             {
                 break; // Client disconnected
@@ -66,7 +67,7 @@ void ServerMessenger::handleClient(int clientSocket)
         }
     }
 
-    closeSocket(clientSocket);
+    socket->closeSocket(clientSocket);
     connectedClients->remove(clientSocket);
 }
 
@@ -86,7 +87,7 @@ void ServerMessenger::broadcastMessage(int senderId, const Message &message)
 int ServerMessenger::sendMessageToClient(const int &clientSocket, const Message &message)
 {
     std::cout << "Sending message: " << message << std::endl;
-    return sendSocket(clientSocket, message.serialize().c_str(), message.serialize().length(), 0);
+    return socket->sendSocket(clientSocket, message.serialize().c_str(), message.serialize().length(), 0);
 }
 
 int ServerMessenger::start()
@@ -99,7 +100,7 @@ int ServerMessenger::start()
         struct sockaddr_in address;
         socklen_t addrlen = sizeof(address);
 
-        int new_socket = acceptSocket(server_fd, (struct sockaddr *)&address, &addrlen);
+        int new_socket = socket->acceptSocket(server_fd, (struct sockaddr *)&address, &addrlen);
         if (new_socket < 0)
         {
             perror("accept");
@@ -116,7 +117,7 @@ int ServerMessenger::start()
 int ServerMessenger::stop()
 {
     running = false;
-    closeSocket(server_fd);
+    socket->closeSocket(server_fd);
     return EXIT_SUCCESS;
 };
 
