@@ -17,6 +17,8 @@ It has been compiled and tested on MacOS 14.3.
 make all
 ```
 
+## Operation
+
 ### Running Server
 
 ```bash
@@ -29,7 +31,9 @@ make all
 ./out/client
 ```
 
-### Testing
+To demonstrate functionality, the ideal setup is to run the server and at least two clients concurrently.
+
+## Testing
 
 ```bash
 ./out/test_server
