@@ -1,33 +1,38 @@
 # Group Project
 
-## Requirements
+## Getting Started
 
-* OOP
-* Data structures
-  * Minimum - LinkedList
-* Algorithms
-  * Minimum - Sorting/Search
-* Focus
-  * Data Structures
-    * Iterators
-    * Binary Trees, etc
-  * OOP application
+This project is intended only to run on UNIX systems. \
+It has been compiled and tested on MacOS 14.3.
 
-## Project Dates
+### Prerequisites
 
-* 11/15 - 11/17 - Choose a group
-* 11/27 - Partial UML, Summary (goals, plan)
-  * Summary:
-    * Stages of Development
-* 12/4 - Draft
-  * UML
-  * more extensive description
-  * (some) working code
-  * tests
-* Finals Week (12/6) - Presentation
-  * Diagrams
-  * Summary
-  * Code
-  * Tests
-  * Developer-focused Documentation
+- [G++](https://gcc.gnu.org/)
+- [Make](https://www.gnu.org/software/make/)
+- [GoogleTest](https://github.com/google/googletest)
 
+### Building
+
+```bash
+make all
+```
+
+### Running Server
+
+```bash
+./out/server
+```
+
+### Running Client
+
+```bash
+./out/client
+```
+
+### Testing
+
+```bash
+./out/test_server
+./out/test_client
+./out/test_common
+```
